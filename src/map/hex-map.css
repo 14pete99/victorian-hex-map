@@ -1,0 +1,315 @@
+/* The hexagon map. Self-contained: the colours it needs are set on .map, so a page
+   can restyle the map by overriding these properties. System fonts only. */
+
+.map {
+  --surface-2: #f8f7f2;
+  --ink: #15171c;
+  --muted: #69707c;
+  --line: #e3dfd4;
+  --accent: #f2a900;
+  --focus: #1857e0;
+  --font-sans: 'Inter', 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --font-label: Verdana, Geneva, 'DejaVu Sans', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'SF Mono', 'Segoe UI Mono', Consolas, Menlo, monospace;
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  color: var(--ink);
+  /* Set here, not inherited, so labels fit their hexagons whatever the host page uses. */
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.map,
+.map * {
+  box-sizing: border-box;
+}
+
+
+.map {
+  color-scheme: light;
+  --float: rgb(255 255 255 / 0.92);
+  --map-panel: #f1f2f3;
+  --map-hairline: rgb(0 0 0 / 0.2);
+  --map-outline: #000000;
+  --map-ground: #ffffff;
+  --map-label: #69707c;
+  --water: #cfe2f1;
+  --water-ink: #36586f;
+}
+
+.map[data-theme='dark'] {
+  color-scheme: dark;
+  --surface-2: #2f2f2f;
+  --ink: #ffffff;
+  --line: #3b3b3b;
+  --focus: #8ab4ff;
+  --float: rgb(36 36 36 / 0.92);
+  --map-panel: #242424;
+  --map-hairline: rgb(255 255 255 / 0.2);
+  --map-outline: #ebebeb;
+  --map-ground: #0f0f0f;
+  --map-label: #a6a6a6;
+  --water: #1c2c3a;
+  --water-ink: #8fb3cf;
+}
+
+.zoom-controls button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.zoom-controls button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.map {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  /* Lets the zoom controls leave the map when the panel is too narrow to spare a corner. */
+  container-type: inline-size;
+}
+
+.zoom-controls {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--float);
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 8px rgb(21 23 28 / 0.08);
+}
+
+.zoom-controls button {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.zoom-controls button:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+.zoom-controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.zoom-controls .zoom-reset {
+  font-size: 12px;
+  border-left: 1px solid var(--line);
+  border-radius: 0 999px 999px 0;
+  padding: 0 12px 0 10px;
+}
+
+.zoom-level {
+  min-width: 46px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* On a narrow panel the controls would cover the northern seats, so they sit above the map. */
+@container (max-width: 980px) {
+  .zoom-controls {
+    position: static;
+    width: fit-content;
+    margin: 0 0 8px auto;
+  }
+}
+
+.map-viewport {
+  overflow: hidden;
+  /* the panel the map sits on. */
+  border-radius: 12px;
+  background: var(--map-panel);
+  /* Stops the browser turning a drag into a text selection or image drag. */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.map-viewport--pannable {
+  cursor: grab;
+  touch-action: none;
+}
+
+.map-viewport--dragging {
+  cursor: grabbing;
+}
+
+.map-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform-origin: 50% 50%;
+}
+
+.map-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  fill: var(--map-label);
+}
+
+.map-label--end {
+  text-anchor: end;
+}
+
+/* the bays are scenery, drawn under the seats and deaf to the pointer. */
+.water {
+  pointer-events: none;
+}
+
+.water-tile {
+  fill: var(--water);
+  stroke: var(--map-hairline);
+  stroke-width: calc(1.5px / var(--zoom, 1));
+  vector-effect: non-scaling-stroke;
+}
+
+.water-name {
+  text-anchor: middle;
+  font-size: 10.5px;
+  font-weight: 300;
+  fill: var(--water-ink);
+}
+
+.hex {
+  cursor: pointer;
+  transition: opacity 0.5s;
+}
+
+.map-viewport--pannable .hex {
+  cursor: inherit;
+}
+
+/* The face is what is seen; the cell-sized target over it is what the pointer meets (see HexMap). */
+.hex-face {
+  pointer-events: none;
+}
+
+.hex-hit {
+  fill: none;
+  stroke: none;
+  pointer-events: all;
+}
+
+/* one flat colour, no outline or ring of its own. The hairlines are a layer above. */
+.hex-shape {
+  stroke: none;
+  transition: fill 0.5s;
+}
+
+/* a hexagon flips when its projected winner changes: it narrows for half a second, HexMap swaps its
+   colour and text while it is at its narrowest, and it widens for half a second. The swap is not
+   a transition. */
+.hex-face--narrow {
+  animation: hex-narrow 0.5s ease-in-out forwards;
+}
+
+.hex-face--widen {
+  animation: hex-widen 0.5s ease-in-out;
+}
+
+.hex-face--narrow .hex-shape,
+.hex-face--widen .hex-shape {
+  transition: none;
+}
+
+@keyframes hex-narrow {
+  from {
+    transform: none;
+  }
+
+  to {
+    transform: scaleX(0.03);
+  }
+}
+
+@keyframes hex-widen {
+  from {
+    transform: scaleX(0.03);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+/* both lines of a seat label in the same face and in regular weight, so they stay legible when small. */
+.hex-name,
+.hex-sub {
+  font-family: var(--font-label);
+  font-weight: 400;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.hex-sub--gain {
+  letter-spacing: 0.06em;
+}
+
+/* a hairline along every hexagon's edge, the same width at any map size. */
+.hex-borders,
+.map-outline,
+.hex-highlight {
+  pointer-events: none;
+}
+
+/* The zoom is a transform on the whole drawing, which non-scaling-stroke does not see, so it is divided out. */
+.hex-border {
+  fill: none;
+  stroke: var(--map-hairline);
+  stroke-width: calc(1.5px / var(--zoom, 1));
+  vector-effect: non-scaling-stroke;
+  transition: stroke 0.5s;
+}
+
+.hex-border--dimmed {
+  stroke: var(--map-ground);
+}
+
+/* one line round the outer edge of the seats. */
+.map-outline {
+  fill: none;
+  stroke: var(--map-outline);
+  stroke-width: calc(1.5px / var(--zoom, 1));
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* the pointed-at ring; a selected seat adds a gap ring and an outer ring. */
+.hex-highlight-ring {
+  fill: none;
+  stroke: var(--map-outline);
+  stroke-linejoin: round;
+}
+
+.hex-highlight-ring--gap {
+  stroke: var(--map-ground);
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .map *, .map *::before, .map *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

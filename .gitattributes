@@ -1,0 +1,6 @@
+# Store text with LF line endings and check it out with LF on every platform,
+# so a file is byte-for-byte the same on Windows, macOS, Linux and in CI.
+* text=auto eol=lf
+
+# Never treated as text.
+*.png binary

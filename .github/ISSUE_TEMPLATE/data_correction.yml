@@ -1,0 +1,57 @@
+name: Data correction
+description: A seat's 2022 result, or who holds it in the dated snapshot, is wrong
+labels: ["data"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for checking the data.
+
+        The 2022 results come from the Victorian Electoral Commission (VEC), and the changes since then come from the VEC and the Parliament of Victoria. A correction needs a link to the page on one of those sites that shows the right figure. `docs/data.md` explains how each figure is worked out.
+  - type: input
+    id: seat
+    attributes:
+      label: Seat
+      placeholder: Brunswick
+    validations:
+      required: true
+  - type: dropdown
+    id: field
+    attributes:
+      label: What is wrong?
+      options:
+        - 2022 winner
+        - 2022 runner-up
+        - 2022 margin
+        - Who holds the seat in the dated snapshot
+        - The seat's name, region or position on the map
+        - Something else
+    validations:
+      required: true
+  - type: input
+    id: current
+    attributes:
+      label: What the data says now
+      placeholder: Margin 13.5
+    validations:
+      required: true
+  - type: input
+    id: correct
+    attributes:
+      label: What it should say
+      placeholder: Margin 13.7
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Link to the source
+      description: A page on vec.vic.gov.au or parliament.vic.gov.au that shows the right figure.
+      placeholder: https://www.vec.vic.gov.au/results/state-election-results/2022-state-election-results
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: For a margin, the two candidates' vote counts are the most useful thing to include.

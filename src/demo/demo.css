@@ -1,0 +1,404 @@
+/* The demo page around the map: one column on phones, map beside the seat card on
+   wider screens. System fonts only, so nothing is fetched. */
+
+:root {
+  --paper: #f3f1ea;
+  --surface: #ffffff;
+  --surface-2: #f8f7f2;
+  --ink: #15171c;
+  --ink-2: #3a3f49;
+  --muted: #69707c;
+  --line: #e3dfd4;
+  --line-strong: #cbc6b8;
+  --focus: #1857e0;
+  --on-ink: #ffffff;
+  --radius: 14px;
+  --gap: 16px;
+  --font-sans: 'Inter', 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --font-serif: 'Charter', 'Bitstream Charter', 'Sitka Text', 'Iowan Old Style', Cambria, Georgia, serif;
+}
+
+.app {
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.app[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: #0f0f0f;
+  --surface: #242424;
+  --surface-2: #2f2f2f;
+  --ink: #ffffff;
+  --ink-2: #ebebeb;
+  --muted: #a6a6a6;
+  --line: #3b3b3b;
+  --line-strong: #595959;
+  --focus: #8ab4ff;
+  --on-ink: #0f0f0f;
+}
+
+.map-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  font-variant-numeric: lining-nums tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h3,
+p,
+dl,
+dd {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.muted {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+/* The vacancy colour is an off-white, so it needs an edge to show against the page and the card. */
+.pill--vacant,
+.dot--vacant {
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+/* ---- Masthead ---------------------------------------------------------- */
+
+.masthead {
+  display: flex;
+  align-items: center;
+  padding: 10px clamp(14px, 2.4vw, 32px);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  letter-spacing: -0.005em;
+}
+
+.brand-mark {
+  width: 22px;
+  height: 22px;
+  fill: var(--ink);
+}
+
+/* ---- Workspace grid ---------------------------------------------------- */
+
+.workspace {
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'titles'
+    'map'
+    'aside';
+  max-width: 1840px;
+  margin: 0 auto;
+  padding: 18px clamp(12px, 2.4vw, 32px) 8px;
+}
+
+.titles {
+  grid-area: titles;
+}
+
+.titles h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(26px, 3.2vw, 40px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  margin-top: 2px;
+}
+
+.subtitle {
+  margin-top: 6px;
+  color: var(--ink-2);
+  font-size: 15px;
+}
+
+.area-map {
+  grid-area: map;
+  min-width: 0;
+  align-self: start;
+}
+
+.area-aside {
+  grid-area: aside;
+  min-width: 0;
+  display: grid;
+  gap: var(--gap);
+  align-content: start;
+}
+
+@media (min-width: 900px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-areas:
+      'titles titles'
+      'map aside';
+  }
+}
+
+/* ---- Cards and filters ------------------------------------------------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+}
+
+/* After .card, so the map card's own padding applies. */
+.area-map {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 14px 10px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.filters .toggle {
+  margin-left: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.chip:hover {
+  border-color: var(--ink);
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--on-ink);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 2px;
+  border: 0;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.toggle-track {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--line-strong);
+  transition: background-color 0.15s;
+  flex: none;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+  transition: transform 0.15s;
+}
+
+.toggle[aria-checked='true'] {
+  color: var(--ink);
+}
+
+.toggle[aria-checked='true'] .toggle-track {
+  background: var(--ink);
+}
+
+.toggle[aria-checked='true'] .toggle-thumb {
+  transform: translateX(14px);
+}
+
+/* ---- Seat card --------------------------------------------------------- */
+
+.seat-card-name {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin-top: 2px;
+}
+
+.seat-card--empty {
+  border-style: dashed;
+  background: transparent;
+}
+
+.seat-card-prompt {
+  margin-top: 6px;
+  color: var(--ink-2);
+}
+
+.seat-card-parties {
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.seat-card-note {
+  margin-top: 10px;
+  color: var(--ink-2);
+}
+
+.seat-card-source {
+  display: inline-block;
+  margin-top: 6px;
+  color: var(--focus);
+}
+
+.seat-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.seat-totals li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.facts dt {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.facts dd {
+  font-size: 15px;
+  font-weight: 650;
+}
+
+/* ---- Footer ------------------------------------------------------------ */
+
+.footer {
+  max-width: 1840px;
+  margin: 0 auto;
+  padding: 14px clamp(12px, 2.4vw, 32px) 28px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.footer b {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.footer a {
+  color: var(--ink-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
