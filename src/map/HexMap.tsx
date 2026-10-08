@@ -151,6 +151,137 @@ const Hex = memo(function Hex({ seat, winner, vacant, assembly, gained, filters,
   );
 });
 
+interface DrawingProps extends Required<Pick<HexMapProps, 'seats' | 'filters' | 'hovered' | 'selected' | 'onHover' | 'onSelect' | 'theme' | 'labels' | 'bands' | 'assembly'>> {
+  bounds: ReturnType<typeof mapBounds>;
+  outline: string;
+}
+
+/**
+ * Everything drawn inside the SVG. None of it depends on the zoom or on where the map has been dragged to, so a
+ * pan or a pinch, which changes only those, redraws nothing here: a finger moving across the screen costs one
+ * style change on the SVG, not a pass over 88 seats.
+ */
+const Drawing = memo(function Drawing({ seats, filters, hovered, selected, onHover, onSelect, theme, labels, bands, assembly, bounds, outline }: DrawingProps) {
+  // the corner labels name districts at the map's geographical extremes. Mildura,
+  // Benambra and Geelong sit beside their namesake edge seats; Gippsland names the region
+  // from the eastern edge, as in the original two-label map.
+  const centreOf = (name: string) => {
+    const seat = seats.find((projection) => projection.seat.name === name)?.seat;
+    return seat ? hexCentre(seat.col, seat.row) : null;
+  };
+  const mildura = centreOf('Mildura');
+  const gippsland = centreOf('Gippsland East');
+  const benambra = centreOf('Benambra');
+  const geelong = centreOf('Geelong');
+  const labelRise = HEX.radius + 6;
+  const halfWidth = (Math.sqrt(3) * HEX.radius) / 2;
+  // the selected seat's rings are drawn first, so a pointed-at seat beside it is never covered.
+  const highlighted = [selected, hovered].filter((name, index, all): name is string => name !== null && all.indexOf(name) === index);
+
+  return (
+    <>
+      {mildura && (
+        <text className="map-label" data-testid="map-label-mildura" x={mildura.x - halfWidth} y={mildura.y - labelRise}>
+          Mildura
+        </text>
+      )}
+      {gippsland && (
+        <text className="map-label map-label--end" data-testid="map-label-gippsland" x={bounds.x + bounds.width - MAP_PADDING} y={gippsland.y - labelRise}>
+          Gippsland
+        </text>
+      )}
+      {benambra && (
+        <text className="map-label map-label--end" data-testid="map-label-benambra" x={benambra.x + halfWidth} y={benambra.y - labelRise}>
+          Benambra
+        </text>
+      )}
+      {geelong && (
+        <text className="map-label map-label--end" data-testid="map-label-geelong" x={geelong.x - halfWidth} y={geelong.y}>
+          Geelong
+        </text>
+      )}
+      {/* the bays are scenery under the seats. They take no pointer events, so they cannot be pointed at or selected. */}
+      <g className="water" data-testid="water">
+        {WATER.map((body) => {
+          const at = hexCentre(body.nameCell.col, body.nameCell.row);
+          const lines = waterNameLines(body.name);
+          return (
+            <g key={body.name} data-water={body.name}>
+              {body.cells.map((cell) => {
+                const { x, y } = hexCentre(cell.col, cell.row);
+                return <polygon key={`${cell.col},${cell.row}`} className="water-tile" data-testid={`water-tile-${cell.col}-${cell.row}`} points={hexPoints(x, y)} />;
+              })}
+              <text className="water-name" data-testid={`water-name-${seatSlug(body.name)}`} x={at.x} y={at.y}>
+                {lines.map((line, index) => (
+                  <tspan key={line} x={at.x} dy={index > 0 ? 12.5 : lines.length > 1 ? -2.5 : 4}>
+                    {line}
+                  </tspan>
+                ))}
+              </text>
+            </g>
+          );
+        })}
+      </g>
+      <g className="seats" data-testid="seats">
+        {seats.map((projection) => (
+          <Hex
+            key={projection.seat.name}
+            seat={projection.seat}
+            winner={projection.winner}
+            vacant={projection.vacant}
+            assembly={assembly}
+            gained={projection.gained}
+            filters={filters}
+            active={projection.seat.name === hovered || projection.seat.name === selected}
+            selected={projection.seat.name === selected}
+            onHover={onHover}
+            onSelect={onSelect}
+            theme={theme}
+            labels={labels}
+            bands={bands}
+          />
+        ))}
+      </g>
+      {/* a hairline along every hexagon's edge, drawn over the fills. */}
+      <g className="hex-borders" data-testid="hex-borders">
+        {seats.map((projection) => {
+          const { x, y } = hexCentre(projection.seat.col, projection.seat.row);
+          return (
+            <polygon
+              key={projection.seat.name}
+              className={isDimmed(projection, filters) ? 'hex-border hex-border--dimmed' : 'hex-border'}
+              data-testid={`hex-border-${seatSlug(projection.seat.name)}`}
+              points={hexPoints(x, y)}
+            />
+          );
+        })}
+      </g>
+      <path className="map-outline" data-testid="map-outline" d={outline} />
+      {/* the pointed-at or selected seat is ringed on top of everything else. */}
+      {highlighted.map((name) => {
+        const projection = seats.find((entry) => entry.seat.name === name);
+        if (!projection) return null;
+        const { x, y } = hexCentre(projection.seat.col, projection.seat.row);
+        const isSelected = name === selected;
+        return (
+          <g key={name} className="hex-highlight" data-testid="hex-highlight" data-seat={name} data-kind={isSelected ? 'selected' : 'pointed'}>
+            {highlightRings(isSelected).map((ring) => (
+              <polygon
+                key={ring.role}
+                className={`hex-highlight-ring hex-highlight-ring--${ring.role}`}
+                data-testid="hex-highlight-ring"
+                data-role={ring.role}
+                points={hexPoints(x, y, ring.radius)}
+                style={{ strokeWidth: ring.width }}
+              />
+            ))}
+          </g>
+        );
+      })}
+    </>
+  );
+});
+
 export const HexMap = memo(function HexMap({ seats, filters, hovered, selected, onHover, onSelect, theme = 'light', labels = true, bands = false, assembly = false }: HexMapProps) {
   const [view, setView] = useState<MapView>(INITIAL_VIEW);
   const [dragging, setDragging] = useState(false);
@@ -314,21 +445,6 @@ export const HexMap = memo(function HexMap({ seats, filters, hovered, selected, 
   const handleHover = useCallback((seat: string | null) => { if (!drag.current?.moved && !pinched.current) onHover(seat); }, [onHover]);
   const handleSelect = useCallback((seat: string) => { if (!drag.current?.moved && !pinched.current && !justDragged.current) onSelect(seat); }, [onSelect]);
 
-  // the corner labels name districts at the map's geographical extremes. Mildura,
-  // Benambra and Geelong sit beside their namesake edge seats; Gippsland names the region
-  // from the eastern edge, as in the original two-label map.
-  const centreOf = (name: string) => {
-    const seat = seats.find((projection) => projection.seat.name === name)?.seat;
-    return seat ? hexCentre(seat.col, seat.row) : null;
-  };
-  const mildura = centreOf('Mildura');
-  const gippsland = centreOf('Gippsland East');
-  const benambra = centreOf('Benambra');
-  const geelong = centreOf('Geelong');
-  const labelRise = HEX.radius + 6;
-  const halfWidth = (Math.sqrt(3) * HEX.radius) / 2;
-  // the selected seat's rings are drawn first, so a pointed-at seat beside it is never covered.
-  const highlighted = [selected, hovered].filter((name, index, all): name is string => name !== null && all.indexOf(name) === index);
 
   return (
     <div className="map" data-testid="map" data-zoom={view.zoom.toFixed(4)} data-theme={theme} data-labels={labels} data-bands={bands}>
@@ -368,104 +484,20 @@ export const HexMap = memo(function HexMap({ seats, filters, hovered, selected, 
           role="img"
           aria-label="Hexagon map of the 88 Legislative Assembly seats"
         >
-          {mildura && (
-            <text className="map-label" data-testid="map-label-mildura" x={mildura.x - halfWidth} y={mildura.y - labelRise}>
-              Mildura
-            </text>
-          )}
-          {gippsland && (
-            <text className="map-label map-label--end" data-testid="map-label-gippsland" x={bounds.x + bounds.width - MAP_PADDING} y={gippsland.y - labelRise}>
-              Gippsland
-            </text>
-          )}
-          {benambra && (
-            <text className="map-label map-label--end" data-testid="map-label-benambra" x={benambra.x + halfWidth} y={benambra.y - labelRise}>
-              Benambra
-            </text>
-          )}
-          {geelong && (
-            <text className="map-label map-label--end" data-testid="map-label-geelong" x={geelong.x - halfWidth} y={geelong.y}>
-              Geelong
-            </text>
-          )}
-          {/* the bays are scenery under the seats. They take no pointer events, so they cannot be pointed at or selected. */}
-          <g className="water" data-testid="water">
-            {WATER.map((body) => {
-              const at = hexCentre(body.nameCell.col, body.nameCell.row);
-              const lines = waterNameLines(body.name);
-              return (
-                <g key={body.name} data-water={body.name}>
-                  {body.cells.map((cell) => {
-                    const { x, y } = hexCentre(cell.col, cell.row);
-                    return <polygon key={`${cell.col},${cell.row}`} className="water-tile" data-testid={`water-tile-${cell.col}-${cell.row}`} points={hexPoints(x, y)} />;
-                  })}
-                  <text className="water-name" data-testid={`water-name-${seatSlug(body.name)}`} x={at.x} y={at.y}>
-                    {lines.map((line, index) => (
-                      <tspan key={line} x={at.x} dy={index > 0 ? 12.5 : lines.length > 1 ? -2.5 : 4}>
-                        {line}
-                      </tspan>
-                    ))}
-                  </text>
-                </g>
-              );
-            })}
-          </g>
-          <g className="seats" data-testid="seats">
-            {seats.map((projection) => (
-              <Hex
-                key={projection.seat.name}
-                seat={projection.seat}
-                winner={projection.winner}
-                vacant={projection.vacant}
-                assembly={assembly}
-                gained={projection.gained}
-                filters={filters}
-                active={projection.seat.name === hovered || projection.seat.name === selected}
-                selected={projection.seat.name === selected}
-                onHover={handleHover}
-                onSelect={handleSelect}
-                theme={theme}
-                labels={labels}
-                bands={bands}
-              />
-            ))}
-          </g>
-          {/* a hairline along every hexagon's edge, drawn over the fills. */}
-          <g className="hex-borders" data-testid="hex-borders">
-            {seats.map((projection) => {
-              const { x, y } = hexCentre(projection.seat.col, projection.seat.row);
-              return (
-                <polygon
-                  key={projection.seat.name}
-                  className={isDimmed(projection, filters) ? 'hex-border hex-border--dimmed' : 'hex-border'}
-                  data-testid={`hex-border-${seatSlug(projection.seat.name)}`}
-                  points={hexPoints(x, y)}
-                />
-              );
-            })}
-          </g>
-          <path className="map-outline" data-testid="map-outline" d={outline} />
-          {/* the pointed-at or selected seat is ringed on top of everything else. */}
-          {highlighted.map((name) => {
-            const projection = seats.find((entry) => entry.seat.name === name);
-            if (!projection) return null;
-            const { x, y } = hexCentre(projection.seat.col, projection.seat.row);
-            const isSelected = name === selected;
-            return (
-              <g key={name} className="hex-highlight" data-testid="hex-highlight" data-seat={name} data-kind={isSelected ? 'selected' : 'pointed'}>
-                {highlightRings(isSelected).map((ring) => (
-                  <polygon
-                    key={ring.role}
-                    className={`hex-highlight-ring hex-highlight-ring--${ring.role}`}
-                    data-testid="hex-highlight-ring"
-                    data-role={ring.role}
-                    points={hexPoints(x, y, ring.radius)}
-                    style={{ strokeWidth: ring.width }}
-                  />
-                ))}
-              </g>
-            );
-          })}
+          <Drawing
+            seats={seats}
+            filters={filters}
+            hovered={hovered}
+            selected={selected}
+            onHover={handleHover}
+            onSelect={handleSelect}
+            theme={theme}
+            labels={labels}
+            bands={bands}
+            assembly={assembly}
+            bounds={bounds}
+            outline={outline}
+          />
         </svg>
       </div>
     </div>
