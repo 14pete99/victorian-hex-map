@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   AT_RISK_BELOW, BAND_STRENGTH, HEX, MAP_PADDING, PARTY_CODES, PARTY_COLOURS, SEATS, THEME_COLOURS, ZOOM,
   canPan, clampZoom, contrast, fmt1, hexCentre, hexState, hexVertices, highlightRings, isAtRisk, isDimmed, mapBounds, mapLabel, marginBand,
-  neighbourCells, outlineEdges, outlineLoops, parseColour, partyTextColour, projectSeats, seatSlug, seatSublabel, textOn, tint, toHex,
+  neighbourCells, outlineEdges, outlineLoops, panLimit, parseColour, partyTextColour, pinchOf, pinchView, projectSeats, seatSlug, seatSublabel, settleView, textOn, tint, toHex,
   waterNameLines, wheelZoom, zoomIn, zoomOut, zoomPercent,
 } from '../src/map';
 import type { MapFilters, SeatProjection, Theme } from '../src/map';
@@ -167,6 +167,44 @@ describe('zoom', () => {
     expect(wheelZoom(1, 0)).toBe(1);
     expect(canPan(1)).toBe(false);
     expect(canPan(1.3)).toBe(true);
+  });
+
+  it('lets a zoomed map move until a quarter of the panel still shows it, and centres it at 100% or below', () => {
+    expect(panLimit(2, 400)).toBe(300);
+    expect(settleView({ zoom: 2, x: 20, y: -30 }, 400, 300)).toEqual({ zoom: 2, x: 20, y: -30 });
+    expect(settleView({ zoom: 2, x: 500, y: -500 }, 400, 300)).toEqual({ zoom: 2, x: 300, y: -225 });
+    expect(settleView({ zoom: 1, x: 20, y: -30 }, 400, 300)).toEqual({ zoom: 1, x: 0, y: 0 });
+    expect(settleView({ zoom: 0.5, x: 20, y: -30 }, 400, 300)).toEqual({ zoom: 0.5, x: 0, y: 0 });
+  });
+});
+
+describe('pinch', () => {
+  it('is measured from the middle of the panel', () => {
+    expect(pinchOf({ x: 100, y: 200 }, { x: 160, y: 280 }, { x: 150, y: 250 })).toEqual({ x: -20, y: -10, distance: 100 });
+  });
+
+  it('zooms by as much as the fingers spread and keeps the point between them in place', () => {
+    const start = { zoom: 1.5, x: 30, y: -20 };
+    const from = { x: 40, y: 10, distance: 100 };
+    const to = { x: 40, y: 10, distance: 200 };
+    const view = pinchView(start, from, to);
+    expect(view.zoom).toBe(3);
+    // The point of the map under the fingers is (finger - pan) / zoom, and must not change.
+    expect((to.x - view.x) / view.zoom).toBeCloseTo((from.x - start.x) / start.zoom);
+    expect((to.y - view.y) / view.zoom).toBeCloseTo((from.y - start.y) / start.zoom);
+    expect(pinchView(view, to, from)).toEqual(start);
+  });
+
+  it('moves the map with the fingers when they move together', () => {
+    const start = { zoom: 2, x: 30, y: -20 };
+    expect(pinchView(start, { x: 40, y: 10, distance: 120 }, { x: 65, y: -5, distance: 120 })).toEqual({ zoom: 2, x: 55, y: -35 });
+  });
+
+  it('stops at the zoom limits, and ignores two fingers that start on the same spot', () => {
+    const start = { zoom: 2, x: 5, y: 5 };
+    expect(pinchView(start, { x: 0, y: 0, distance: 10 }, { x: 0, y: 0, distance: 1000 }).zoom).toBe(ZOOM.max);
+    expect(pinchView(start, { x: 0, y: 0, distance: 1000 }, { x: 0, y: 0, distance: 10 }).zoom).toBe(ZOOM.min);
+    expect(pinchView(start, { x: 0, y: 0, distance: 0 }, { x: 0, y: 0, distance: 50 })).toEqual(start);
   });
 });
 

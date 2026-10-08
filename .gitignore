@@ -3,6 +3,9 @@ dist/
 coverage/
 drafts/
 
+# Local phone gesture tests (Playwright, emulators). They have their own dependencies and stay out of this repository and its CI.
+device-tests/
+
 # Local task tracking (Beads / Dolt). Kept on the maintainer's machine only.
 .beads/
 .dolt/

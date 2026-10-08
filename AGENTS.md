@@ -7,7 +7,7 @@ This repository is a hexagon map of Victoria's 88 Legislative Assembly seats: a 
 ```
 src/map/        The map. Self-contained: it imports only React and its own files.
   HexMap.tsx    The component and its zoom controls
-  map.ts        Geometry, labels, colour strength, outlines, filters, zoom limits
+  map.ts        Geometry, labels, colour strength, outlines, filters, zoom, pinch and pan limits
   seats.ts      The 88 seat records
   assembly.ts   Dated lower-house holdings and source records
   parties.ts    Party names and theme palettes
@@ -106,6 +106,7 @@ The demo's only seat view is **Lower house · 1 October 2026**. Check:
 - Greens filtering leaves Melbourne and Richmond undimmed; Independent filtering leaves Ringwood and South Barwon. The historical margin filter leaves 28 seats undimmed.
 - Theme, labels, selection and zoom controls work. There is no scenario selector or margin-band toggle in this snapshot demo.
 - Above 100% zoom, dragging pans the map and a click still selects a seat. Pressing on the map and releasing outside it leaves `data-pan-x` and `data-pan-y` on `[data-testid="map-viewport"]` unchanged when the pointer comes back with no button held.
+- With touch input: at 100% one finger scrolls the page, and above 100% it pans the map by as far as it moves. A two-finger pinch changes `data-zoom` on `[data-testid="map"]` at any zoom, keeps the seat between the fingers in place and leaves `visualViewport.scale` at 1. This needs real touch input: a touch screen, or the device toolbar in Chrome DevTools, where Shift-drag pinches. A tool that sends mouse clicks while touch emulation is on does not exercise it.
 
 The reusable component also retains election-result support. In a separate browser harness using `projectSeats()` without `assembly`, check the following baseline behaviour:
 
@@ -128,6 +129,7 @@ Every hexagon has `data-testid="hex-<slug>"`, where the slug is the seat name in
 - **Sizing.** The map takes the width of its container and sets its own height from the drawing's proportions, about 851 wide to 706 high. Give the container a width; do not set a height on the map. `.map` has `flex: 1`, so in a flex row it grows to fill the row.
 - **Restyling.** Seat fills are set in TypeScript and applied to each hexagon, so CSS cannot override them: party colours are `PARTY_COLOURS` in `parties.ts`, and the vacancy colour and the panel colour that margin tints are mixed toward are `THEME_COLOURS` in `themes.ts`. Everything around the seats uses custom properties declared on `.map` itself (`--map-panel`, `--map-hairline`, `--map-outline`, `--map-ground`, `--map-label`, `--water`, `--water-ink`, `--font-sans` and `--font-label`). Setting them on a parent has no effect. Override them with a rule that targets `.map` and comes later or is more specific, for example `.my-page .map { --water: #d7ecff; }`. If `--map-panel` changes, change `THEME_COLOURS[theme].panel` to match.
 - **Zoom and pan.** The scroll wheel zooms only with Ctrl or Cmd held, so the page still scrolls normally. Dragging pans only above 100% zoom.
+- **Touch.** A two-finger pinch zooms the map, never the page. At 100% or below one finger scrolls the page; above 100% it pans the map, so the page cannot be scrolled from the map until the reader zooms back out or presses Reset. Both depend on the `touch-action` values `hex-map.css` sets on `.map-viewport` (`pan-x pan-y`, and `none` above 100%). `.zoom-controls` has `manipulation`, so two quick taps on a zoom button are two presses and never a double-tap that magnifies the page. Do not override them.
 - **Fixed text.** The "Mildura", "Gippsland", "Benambra" and "Geelong" labels and the SVG's `aria-label` are written into `HexMap.tsx`. The second line is the holding party when `assembly` is on, otherwise the seat's 2022 margin or "GAIN". A vacancy always reads "Vacant".
 
 The following has not been checked in this repository; treat it as a starting point:
@@ -148,7 +150,7 @@ npm run check:release    # type check, tests, build and security checks; run bef
 | `tests/seats.test.ts` | Seat and water data: 88 seats, unique positions inside the grid and off the water, contests, 2022 totals |
 | `tests/vec.test.ts` | Winners, runners-up and margins against the VEC vote counts in `tests/fixtures/vec-2022-results.json` |
 | `tests/assembly.test.ts` | The dated snapshot: totals, the vacancy, and an HTTPS source on an approved site for each change |
-| `tests/map.test.ts` | The rules in `map.ts`: geometry, labels, bands, filters, zoom, colour contrast |
+| `tests/map.test.ts` | The rules in `map.ts`: geometry, labels, bands, filters, zoom, pinch and pan limits, colour contrast |
 | `tests/render.test.tsx` | The component's markup, rendered without a browser |
 | `tests/security.test.ts` | Imports, forbidden APIs, external links, dependencies, the lockfile and the CI workflow |
 

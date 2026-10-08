@@ -109,6 +109,10 @@ Seats are filled with their party's colour at full strength. With `bands` on, a 
 - The zoom buttons step by a factor of 1.3, between 50% and 400%.
 - The scroll wheel zooms only with Ctrl or Cmd held, so the page still scrolls normally.
 - Above 100%, drag to pan.
+- On a touch screen, pinch with two fingers to zoom, between the same limits. The seat between your fingers stays between them, and the page itself is never magnified.
+- On a touch screen at 100% or below, one finger over the map scrolls the page. Above 100% it pans the map instead, so to scroll the page from the map, pinch back out or press Reset.
+
+The touch behaviour depends on the `touch-action` values the stylesheet sets on `.map-viewport` and `.zoom-controls`. Leave them as they are.
 
 ## Colours
 

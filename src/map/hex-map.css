@@ -88,6 +88,8 @@
   background: var(--float);
   border: 1px solid var(--line);
   box-shadow: 0 2px 8px rgb(21 23 28 / 0.08);
+  /* Two quick taps on a button are two presses, never a double-tap that magnifies the page. */
+  touch-action: manipulation;
 }
 
 .zoom-controls button {
@@ -142,8 +144,12 @@
   /* Stops the browser turning a drag into a text selection or image drag. */
   user-select: none;
   -webkit-user-select: none;
+  /* One finger scrolls the page as usual. Two are left to the map, which zooms itself on a pinch,
+     so the browser must not magnify the whole page with them. */
+  touch-action: pan-x pan-y;
 }
 
+/* Above 100% a finger pans the map instead of scrolling the page. */
 .map-viewport--pannable {
   cursor: grab;
   touch-action: none;

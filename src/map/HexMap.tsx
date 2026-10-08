@@ -7,10 +7,10 @@ import { partyColour } from './parties';
 import { THEME_COLOURS } from './themes';
 import { WATER } from './water';
 import {
-  canPan, DIMMED_OPACITY, FLIP, seatSublabel, hexCentre, hexPoints, hexState, highlightRings, HEX, isDimmed, LABEL, MAP_PADDING, mapBounds, mapLabel, outlinePath, textOn, tint,
-  waterNameLines, wheelZoom, zoomIn, zoomOut, zoomPercent, ZOOM,
+  canPan, DIMMED_OPACITY, FLIP, seatSublabel, hexCentre, hexPoints, hexState, highlightRings, HEX, isDimmed, LABEL, MAP_PADDING, mapBounds, mapLabel, outlinePath, pinchOf, pinchView,
+  settleView, textOn, tint, waterNameLines, wheelZoom, zoomIn, zoomOut, zoomPercent, ZOOM,
 } from './map';
-import type { MapFilters } from './map';
+import type { MapFilters, MapView, Pinch } from './map';
 import type { Party, Seat, SeatProjection, Theme } from './types';
 import { seatSlug } from './map';
 import './hex-map.css';
@@ -32,13 +32,7 @@ export interface HexMapProps {
   assembly?: boolean;
 }
 
-interface ViewState {
-  zoom: number;
-  x: number;
-  y: number;
-}
-
-const INITIAL_VIEW: ViewState = { zoom: ZOOM.initial, x: 0, y: 0 };
+const INITIAL_VIEW: MapView = { zoom: ZOOM.initial, x: 0, y: 0 };
 const DRAG_THRESHOLD = 4;
 
 interface HexProps {
@@ -158,34 +152,33 @@ const Hex = memo(function Hex({ seat, winner, vacant, assembly, gained, filters,
 });
 
 export const HexMap = memo(function HexMap({ seats, filters, hovered, selected, onHover, onSelect, theme = 'light', labels = true, bands = false, assembly = false }: HexMapProps) {
-  const [view, setView] = useState<ViewState>(INITIAL_VIEW);
+  const [view, setView] = useState<MapView>(INITIAL_VIEW);
   const [dragging, setDragging] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
+  /** The view as of the last change. The state above is a render behind while a gesture is under way, and a gesture must not be. */
+  const latest = useRef<MapView>(INITIAL_VIEW);
   const drag = useRef<{ pointerId: number; startX: number; startY: number; originX: number; originY: number; moved: boolean } | null>(null);
-  /** True for the instant after a drag ends, so the click that ends it selects nothing. */
+  /** The fingers on the map, by pointer id, and the pinch that two of them are making. */
+  const fingers = useRef(new Map<number, { x: number; y: number }>());
+  const pinch = useRef<{ ids: readonly [number, number]; view: MapView; from: Pinch } | null>(null);
+  /** True from the start of a pinch until every finger has lifted. */
+  const pinched = useRef(false);
+  /** True for the instant after a drag or a pinch ends, so the click that ends it selects nothing. */
   const justDragged = useRef(false);
   const seatCells = useMemo(() => seats.map((projection) => projection.seat), [seats]);
   const bounds = useMemo(() => mapBounds([...seatCells, ...WATER.flatMap((body) => body.cells)]), [seatCells]);
   // one line round the outer edge of the seats, the bays' shores included.
   const outline = useMemo(() => outlinePath(seatCells), [seatCells]);
 
-  /** Keeps part of the map in view while panning, and re-centres at 100% or below. */
-  const settle = useCallback((next: ViewState): ViewState => {
-    if (!canPan(next.zoom)) return { zoom: next.zoom, x: 0, y: 0 };
+  /** Every change to the view goes through here: it is settled within the panel, and `latest` never falls behind. */
+  const changeView = useCallback((change: (current: MapView) => MapView) => {
     const element = viewportRef.current;
-    const limitX = element ? ((next.zoom - 1) * element.clientWidth) / 2 + element.clientWidth * 0.25 : Infinity;
-    const limitY = element ? ((next.zoom - 1) * element.clientHeight) / 2 + element.clientHeight * 0.25 : Infinity;
-    return {
-      zoom: next.zoom,
-      x: Math.max(-limitX, Math.min(limitX, next.x)),
-      y: Math.max(-limitY, Math.min(limitY, next.y)),
-    };
+    const next = settleView(change(latest.current), element?.clientWidth ?? Infinity, element?.clientHeight ?? Infinity);
+    latest.current = next;
+    setView(next);
   }, []);
 
-  const changeZoom = useCallback(
-    (change: (zoom: number) => number) => setView((current) => settle({ ...current, zoom: change(current.zoom) })),
-    [settle],
-  );
+  const changeZoom = useCallback((change: (zoom: number) => number) => changeView((current) => ({ ...current, zoom: change(current.zoom) })), [changeView]);
 
   // Ctrl or Cmd with the scroll wheel zooms. The listener must be non-passive
   // so the browser's own page zoom can be cancelled.
@@ -201,24 +194,94 @@ export const HexMap = memo(function HexMap({ seats, filters, hovered, selected, 
     return () => element.removeEventListener('wheel', onWheel);
   }, [changeZoom]);
 
-  // pan by dragging, only while zoom is above 100%.
+  // Once a pinch has begun, the fingers still down belong to the map until they have all lifted: at 100% the
+  // browser would otherwise scroll the page with them. Like the wheel listener, this one must be non-passive to refuse.
+  useEffect(() => {
+    const element = viewportRef.current;
+    if (!element) return;
+    const onTouchMove = (event: TouchEvent) => {
+      if (pinched.current && event.cancelable) event.preventDefault();
+    };
+    element.addEventListener('touchmove', onTouchMove, { passive: false });
+    return () => element.removeEventListener('touchmove', onTouchMove);
+  }, []);
+
+  /** The click that ends a drag or a pinch selects nothing. */
+  const swallowClick = () => {
+    justDragged.current = true;
+    window.setTimeout(() => {
+      justDragged.current = false;
+      setDragging(false);
+    }, 0);
+  };
+
+  /** The pinch two fingers are making now, measured from the middle of the panel. */
+  const pinchBetween = (ids: readonly [number, number]): Pinch | null => {
+    const first = fingers.current.get(ids[0]);
+    const second = fingers.current.get(ids[1]);
+    const panel = viewportRef.current?.getBoundingClientRect();
+    if (!first || !second || !panel) return null;
+    return pinchOf(first, second, { x: panel.left + panel.width / 2, y: panel.top + panel.height / 2 });
+  };
+
+  // pinch with two fingers to zoom, at any zoom; pan by dragging, only while zoom is above 100%.
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (!canPan(view.zoom) || event.button !== 0) return;
-    drag.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, originX: view.x, originY: view.y, moved: false };
+    if (event.pointerType === 'touch') {
+      // A first finger starts afresh: no finger of an earlier touch can still be down.
+      if (event.isPrimary) {
+        fingers.current.clear();
+        pinch.current = null;
+        pinched.current = false;
+      }
+      fingers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (fingers.current.size > 2) return;
+      if (fingers.current.size === 2) {
+        const [first, second] = fingers.current.keys();
+        const from = pinchBetween([first, second]);
+        if (!from) return;
+        // The drag the first finger may have begun gives way to the pinch.
+        drag.current = null;
+        pinch.current = { ids: [first, second], view: latest.current, from };
+        pinched.current = true;
+        onHover(null);
+        return;
+      }
+    }
+    if (!canPan(latest.current.zoom) || event.button !== 0) return;
+    drag.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, originX: latest.current.x, originY: latest.current.y, moved: false };
   };
   const endDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     const current = drag.current;
     if (!current || current.pointerId !== event.pointerId) return;
     drag.current = null;
-    if (current.moved) {
-      justDragged.current = true;
-      window.setTimeout(() => {
-        justDragged.current = false;
-        setDragging(false);
-      }, 0);
+    if (current.moved) swallowClick();
+  };
+  const onPointerEnd = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (fingers.current.delete(event.pointerId)) {
+      if (pinch.current?.ids.includes(event.pointerId)) {
+        pinch.current = null;
+        // One finger left on a zoomed map carries on as a drag, from where the pinch left the map.
+        const [rest] = fingers.current;
+        if (rest && fingers.current.size === 1 && canPan(latest.current.zoom)) {
+          drag.current = { pointerId: rest[0], startX: rest[1].x, startY: rest[1].y, originX: latest.current.x, originY: latest.current.y, moved: true };
+          setDragging(true);
+        }
+      }
+      if (fingers.current.size === 0 && pinched.current) {
+        pinched.current = false;
+        swallowClick();
+      }
     }
+    endDrag(event);
   };
   const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (fingers.current.has(event.pointerId)) fingers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const pinching = pinch.current;
+    if (pinching) {
+      const to = pinching.ids.includes(event.pointerId) ? pinchBetween(pinching.ids) : null;
+      if (to) changeView(() => pinchView(pinching.view, pinching.from, to));
+      return;
+    }
     const current = drag.current;
     if (!current || current.pointerId !== event.pointerId) return;
     // The pointer is captured only once a drag has moved, so a button released outside the map before
@@ -233,7 +296,14 @@ export const HexMap = memo(function HexMap({ seats, filters, hovered, selected, 
       onHover(null);
       event.currentTarget.setPointerCapture(event.pointerId);
     }
-    setView((state) => settle({ zoom: state.zoom, x: current.originX + dx, y: current.originY + dy }));
+    changeView((state) => ({ zoom: state.zoom, x: current.originX + dx, y: current.originY + dy }));
+  };
+  /**
+   * The viewport losing its capture of a pointer ends the drag. A finger is captured first by the seat it lands
+   * on, and that capture passing to the viewport as a drag begins is reported here too; it ends nothing.
+   */
+  const onLostPointerCapture = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) endDrag(event);
   };
   /** A press that leaves the map before it has become a drag is dropped: its release may happen out of sight. */
   const onPointerLeave = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -241,8 +311,8 @@ export const HexMap = memo(function HexMap({ seats, filters, hovered, selected, 
     if (current && current.pointerId === event.pointerId && !current.moved) drag.current = null;
   };
 
-  const handleHover = useCallback((seat: string | null) => { if (!drag.current?.moved) onHover(seat); }, [onHover]);
-  const handleSelect = useCallback((seat: string) => { if (!drag.current?.moved && !justDragged.current) onSelect(seat); }, [onSelect]);
+  const handleHover = useCallback((seat: string | null) => { if (!drag.current?.moved && !pinched.current) onHover(seat); }, [onHover]);
+  const handleSelect = useCallback((seat: string) => { if (!drag.current?.moved && !pinched.current && !justDragged.current) onSelect(seat); }, [onSelect]);
 
   // the corner labels name districts at the map's geographical extremes. Mildura,
   // Benambra and Geelong sit beside their namesake edge seats; Gippsland names the region
@@ -272,7 +342,7 @@ export const HexMap = memo(function HexMap({ seats, filters, hovered, selected, 
         <button type="button" data-testid="zoom-in" aria-label="Zoom in" onClick={() => changeZoom(zoomIn)} disabled={view.zoom >= ZOOM.max}>
           +
         </button>
-        <button type="button" className="zoom-reset" data-testid="zoom-reset" aria-label="Reset zoom" onClick={() => setView(INITIAL_VIEW)}>
+        <button type="button" className="zoom-reset" data-testid="zoom-reset" aria-label="Reset zoom" onClick={() => changeView(() => INITIAL_VIEW)}>
           Reset
         </button>
       </div>
@@ -284,9 +354,9 @@ export const HexMap = memo(function HexMap({ seats, filters, hovered, selected, 
         data-pan-y={view.y.toFixed(1)}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
-        onLostPointerCapture={endDrag}
+        onPointerUp={onPointerEnd}
+        onPointerCancel={onPointerEnd}
+        onLostPointerCapture={onLostPointerCapture}
         onPointerLeave={onPointerLeave}
       >
         <svg

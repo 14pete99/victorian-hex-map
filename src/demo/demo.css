@@ -79,6 +79,8 @@ button {
   font: inherit;
   color: inherit;
   cursor: pointer;
+  /* Two quick taps are two presses, not a double-tap that magnifies the page. */
+  touch-action: manipulation;
 }
 
 :focus-visible {

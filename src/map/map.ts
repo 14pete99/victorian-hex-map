@@ -292,6 +292,48 @@ export function canPan(zoom: number): boolean {
   return zoom > 1;
 }
 
+/** How the map sits in its panel: how far it is magnified, and how far it is moved from the middle, in pixels. */
+export interface MapView {
+  zoom: number;
+  x: number;
+  y: number;
+}
+
+/** How far the map may be moved along a panel side of this length: a quarter of the panel always shows map. */
+export function panLimit(zoom: number, size: number): number {
+  return ((zoom - 1) * size) / 2 + size * 0.25;
+}
+
+/** Keeps part of the map in view while panning, and re-centres at 100% or below. */
+export function settleView(view: MapView, width: number, height: number): MapView {
+  if (!canPan(view.zoom)) return { zoom: view.zoom, x: 0, y: 0 };
+  const limitX = panLimit(view.zoom, width);
+  const limitY = panLimit(view.zoom, height);
+  return { zoom: view.zoom, x: Math.max(-limitX, Math.min(limitX, view.x)), y: Math.max(-limitY, Math.min(limitY, view.y)) };
+}
+
+/** Two fingers on the map: the point midway between them, measured from the middle of the panel, and how far apart they are. */
+export interface Pinch {
+  x: number;
+  y: number;
+  distance: number;
+}
+
+/** The pinch two fingers make. All three points are in the same coordinates, such as the page's. */
+export function pinchOf(a: { x: number; y: number }, b: { x: number; y: number }, panelCentre: { x: number; y: number }): Pinch {
+  return { x: (a.x + b.x) / 2 - panelCentre.x, y: (a.y + b.y) / 2 - panelCentre.y, distance: Math.hypot(a.x - b.x, a.y - b.y) };
+}
+
+/**
+ * The view a pinch leads to, before it is settled. The zoom changes by as much as the fingers have spread or
+ * closed, within the limits, and whatever was midway between them when they touched down stays midway between them.
+ */
+export function pinchView(start: MapView, from: Pinch, to: Pinch): MapView {
+  const zoom = from.distance > 0 ? clampZoom((start.zoom * to.distance) / from.distance) : start.zoom;
+  const scale = zoom / start.zoom;
+  return { zoom, x: to.x - scale * (from.x - start.x), y: to.y - scale * (from.y - start.y) };
+}
+
 /** the zoom shown as a percentage. */
 export function zoomPercent(zoom: number): string {
   return `${Math.round(zoom * 100)}%`;

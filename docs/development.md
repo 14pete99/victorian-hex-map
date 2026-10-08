@@ -21,7 +21,7 @@ npm run check:release    # type check, tests, build and security checks
 ```
 src/map/        The map: the folder people copy
   HexMap.tsx    The component and its zoom controls
-  map.ts        Geometry, labels, colour strength, outlines, filters, zoom limits
+  map.ts        Geometry, labels, colour strength, outlines, filters, zoom, pinch and pan limits
   seats.ts      The 88 seats
   assembly.ts   The house on 1 October 2026: changes since 2022 and their sources
   parties.ts    Party names and colours
@@ -59,11 +59,11 @@ Each seat's `col` and `row` in `seats.ts` set its position, and `hexCentre` in `
 | `seats.test.ts` | The seat and bay data: 88 seats, unique positions inside the grid and off the water, contest labels, the 2022 totals |
 | `vec.test.ts` | Winners, runners-up and margins against the VEC vote counts in `fixtures/vec-2022-results.json` |
 | `assembly.test.ts` | The 1 October 2026 snapshot: its totals, the vacancy, and an HTTPS source on an approved site for each change |
-| `map.test.ts` | The rules in `map.ts`: geometry, labels, bands, filters, zoom, colour contrast |
+| `map.test.ts` | The rules in `map.ts`: geometry, labels, bands, filters, zoom, pinch and pan limits, colour contrast |
 | `render.test.tsx` | The component's markup, rendered without a browser |
 | `security.test.ts` | The security checks below |
 
-The tests do not cover pointer events, the flip animation or zooming. Check those in a browser; [AGENTS.md](../AGENTS.md) has the list, written so that a person or an agent can follow it.
+The tests do not cover pointer events, the flip animation or zooming. Check those in a browser; [AGENTS.md](../AGENTS.md) has the list, written so that a person or an agent can follow it. Touch gestures need real touch input: a touch screen, or the device toolbar in Chrome DevTools.
 
 ## Security checks
 
