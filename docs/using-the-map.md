@@ -47,7 +47,7 @@ The first six are required.
 | `filters` | `MapFilters` | `{ party: Party \| null, atRisk: boolean }`. Seats a filter excludes are dimmed, not hidden. |
 | `hovered` | `string \| null` | Name of the pointed-at seat, ringed once |
 | `selected` | `string \| null` | Name of the selected seat, ringed three times |
-| `onHover` | `(seat: string \| null) => void` | Called with the seat name when the pointer enters a hexagon and with `null` when it leaves |
+| `onHover` | `(seat: string \| null) => void` | Called with the seat name when a mouse or pen enters a hexagon and with `null` when the pointer leaves. A finger never points at a seat: a touch selects it or does nothing. |
 | `onSelect` | `(seat: string) => void` | Called with the seat name on a click |
 | `theme` | `'light' \| 'dark'` | Optional; `light` by default |
 | `labels` | `boolean` | Optional; `true` by default. `false` hides the seat text and keeps the bay and corner labels. |

@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   AT_RISK_BELOW, BAND_STRENGTH, HEX, MAP_PADDING, PARTY_CODES, PARTY_COLOURS, SEATS, THEME_COLOURS, ZOOM,
-  canPan, clampZoom, contrast, fmt1, hexCentre, hexState, hexVertices, highlightRings, isAtRisk, isDimmed, mapBounds, mapLabel, marginBand,
+  canPan, canPointAt, clampZoom, contrast, fmt1, hexCentre, hexState, hexVertices, highlightRings, isAtRisk, isDimmed, mapBounds, mapLabel, marginBand,
   neighbourCells, outlineEdges, outlineLoops, panLimit, parseColour, partyTextColour, pinchOf, pinchView, projectSeats, seatSlug, seatSublabel, settleView, textOn, tint, toHex,
   waterNameLines, wheelZoom, zoomIn, zoomOut, zoomPercent,
 } from '../src/map';
@@ -175,6 +175,14 @@ describe('zoom', () => {
     expect(settleView({ zoom: 2, x: 500, y: -500 }, 400, 300)).toEqual({ zoom: 2, x: 300, y: -225 });
     expect(settleView({ zoom: 1, x: 20, y: -30 }, 400, 300)).toEqual({ zoom: 1, x: 0, y: 0 });
     expect(settleView({ zoom: 0.5, x: 20, y: -30 }, 400, 300)).toEqual({ zoom: 0.5, x: 0, y: 0 });
+  });
+});
+
+describe('pointing', () => {
+  it('lets a mouse or a pen point at a seat, and not a finger', () => {
+    expect(canPointAt('mouse')).toBe(true);
+    expect(canPointAt('pen')).toBe(true);
+    expect(canPointAt('touch')).toBe(false);
   });
 });
 

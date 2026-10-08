@@ -7,7 +7,7 @@ import { partyColour } from './parties';
 import { THEME_COLOURS } from './themes';
 import { WATER } from './water';
 import {
-  canPan, DIMMED_OPACITY, FLIP, seatSublabel, hexCentre, hexPoints, hexState, highlightRings, HEX, isDimmed, LABEL, MAP_PADDING, mapBounds, mapLabel, outlinePath, pinchOf, pinchView,
+  canPan, canPointAt, DIMMED_OPACITY, FLIP, seatSublabel, hexCentre, hexPoints, hexState, highlightRings, HEX, isDimmed, LABEL, MAP_PADDING, mapBounds, mapLabel, outlinePath, pinchOf, pinchView,
   settleView, textOn, tint, waterNameLines, wheelZoom, zoomIn, zoomOut, zoomPercent, ZOOM,
 } from './map';
 import type { MapFilters, MapView, Pinch } from './map';
@@ -116,7 +116,9 @@ const Hex = memo(function Hex({ seat, winner, vacant, assembly, gained, filters,
       data-ink={face.ink}
       // a filtered-out hexagon is drawn faint.
       style={state.dimmed ? { opacity: DIMMED_OPACITY } : undefined}
-      onPointerEnter={() => onHover(seat.name)}
+      onPointerEnter={(event) => {
+        if (canPointAt(event.pointerType)) onHover(seat.name);
+      }}
       onPointerLeave={() => onHover(null)}
       onClick={() => onSelect(seat.name)}
     >

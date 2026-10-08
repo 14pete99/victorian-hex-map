@@ -80,7 +80,7 @@ The original six props are required. Four display props are optional: `theme` (`
 | `filters` | `MapFilters` | `{ party: Party \| null, atRisk: boolean }`. Excluded seats are dimmed, not hidden. |
 | `hovered` | `string \| null` | Name of the pointed-at seat, outlined on top |
 | `selected` | `string \| null` | Name of the clicked seat, outlined on top |
-| `onHover` | `(seat: string \| null) => void` | Called with the seat name on pointer enter and `null` on leave |
+| `onHover` | `(seat: string \| null) => void` | Called with the seat name when a mouse or pen enters a hexagon and `null` on leave. Never called with a seat for a touch. |
 | `onSelect` | `(seat: string) => void` | Called with the seat name on click |
 
 The map keeps no selection state of its own. If the host does not store `hovered` and `selected` and pass them back, nothing is outlined.
@@ -130,6 +130,7 @@ Every hexagon has `data-testid="hex-<slug>"`, where the slug is the seat name in
 - **Restyling.** Seat fills are set in TypeScript and applied to each hexagon, so CSS cannot override them: party colours are `PARTY_COLOURS` in `parties.ts`, and the vacancy colour and the panel colour that margin tints are mixed toward are `THEME_COLOURS` in `themes.ts`. Everything around the seats uses custom properties declared on `.map` itself (`--map-panel`, `--map-hairline`, `--map-outline`, `--map-ground`, `--map-label`, `--water`, `--water-ink`, `--font-sans` and `--font-label`). Setting them on a parent has no effect. Override them with a rule that targets `.map` and comes later or is more specific, for example `.my-page .map { --water: #d7ecff; }`. If `--map-panel` changes, change `THEME_COLOURS[theme].panel` to match.
 - **Zoom and pan.** The scroll wheel zooms only with Ctrl or Cmd held, so the page still scrolls normally. Dragging pans only above 100% zoom.
 - **Touch.** A two-finger pinch zooms the map, never the page. At 100% or below one finger scrolls the page; above 100% it pans the map, so the page cannot be scrolled from the map until the reader zooms back out or presses Reset. Both depend on the `touch-action` values `hex-map.css` sets on `.map-viewport` (`pan-x pan-y`, and `none` above 100%). `.zoom-controls` has `manipulation`, so two quick taps on a zoom button are two presses and never a double-tap that magnifies the page. Do not override them.
+- **Hover and touch.** A touch does not point at a seat: `onHover` is called with a seat only for a mouse or pen (`canPointAt` in `map.ts`). Keep it that way. Safari on an iPhone sends no click for a tap that makes a link or button appear, so a page that shows one for the pointed-at seat would make that seat impossible to select there. The demo's seat card did this for the seats that carry a source link.
 - **Fixed text.** The "Mildura", "Gippsland", "Benambra" and "Geelong" labels and the SVG's `aria-label` are written into `HexMap.tsx`. The second line is the holding party when `assembly` is on, otherwise the seat's 2022 margin or "GAIN". A vacancy always reads "Vacant".
 
 The following has not been checked in this repository; treat it as a starting point:

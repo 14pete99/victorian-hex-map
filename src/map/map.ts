@@ -292,6 +292,15 @@ export function canPan(zoom: number): boolean {
   return zoom > 1;
 }
 
+/**
+ * Whether a pointer of this kind can point at a seat without pressing it. A mouse and a pen can. A finger
+ * cannot: it is only there while it touches. Safari, besides, sends no click for a tap that makes a link or a
+ * button appear, so a page that showed one for the pointed-at seat would leave that seat impossible to select.
+ */
+export function canPointAt(pointerType: string): boolean {
+  return pointerType !== 'touch';
+}
+
 /** How the map sits in its panel: how far it is magnified, and how far it is moved from the middle, in pixels. */
 export interface MapView {
   zoom: number;
