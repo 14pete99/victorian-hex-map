@@ -129,14 +129,11 @@ export function Demo() {
               <button type="button" className="chip" aria-pressed={theme === 'dark'} data-testid="display-dark" onClick={() => setTheme((value) => value === 'light' ? 'dark' : 'light')}>Dark theme</button>
               <button type="button" className="chip" aria-pressed={labels} data-testid="display-labels" onClick={() => setLabels((value) => !value)}>Seat labels</button>
             </div>
-            <button type="button" role="switch" aria-checked={atRisk} className="toggle" data-testid="filter-at-risk" onClick={() => setAtRisk((on) => !on)}>
-              <span className="toggle-track" aria-hidden="true">
-                <span className="toggle-thumb" />
-              </span>
-              <span className="toggle-label">2022 margin below 6%</span>
-            </button>
           </div>
           <HexMap seats={ASSEMBLY_SEATS} filters={filters} hovered={hovered} selected={selected} onHover={setHovered} onSelect={setSelected} theme={theme} labels={labels} assembly />
+          <div className="map-toggles" role="group" aria-label="Map options">
+            <button type="button" className="chip" aria-pressed={atRisk} data-testid="filter-at-risk" onClick={() => setAtRisk((on) => !on)}>2022 margin below 6%</button>
+          </div>
         </section>
         <aside className="area-aside">
           <SeatCard projection={shown} theme={theme} />
