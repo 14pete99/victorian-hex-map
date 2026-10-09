@@ -2,20 +2,20 @@
 
 # Victorian Hexagon Map
 
-A hexagon map of the 88 seats in Victoria's Legislative Assembly, built as a React component you can copy into your own project. Every seat is one hexagon of the same size, placed roughly where the seat sits in the state and coloured by the party that holds it.
+A Victorian electoral map drawn as hexagons: the 88 state electorates of the Legislative Assembly, built as a React component you can copy into your own project. Every seat is one hexagon of the same size, placed roughly where the electorate sits in the state and coloured by the party that holds it.
 
 Each seat counts the same in Parliament, but on a geographic map the Melbourne seats, where most of them are, shrink to specks beside the country ones. Giving every seat the same space shows the house as it votes.
 
 ## What is in it
 
 - **The map.** A self-contained React component. Point at or select a seat, filter by party, zoom and pan, and switch between light and dark themes. Its only dependency is React.
-- **The data.** The 2022 election result for every seat (winner, runner-up and margin), checked against Victorian Electoral Commission counts. It also holds the state of the house on 1 October 2026: Labor 54, Liberal 20, Nationals 9, Greens 2, Independent 2 and one vacancy, with each change since the election linked to its source.
+- **The data.** The 2022 state election result for every seat (winner, runner-up and margin), checked against Victorian Electoral Commission counts. It also holds the state of the house on 1 October 2026: Labor 54, Liberal 20, Nationals 9, Greens 2, Independent 2 and one vacancy, with each change since the election linked to its source.
 - **A demo page.** Its map and controls are in the screenshot above.
 - **Tests.** Checks on the data, the map's rules, its markup and its security.
 
 ## Try it
 
-The demo is live at https://14pete99.github.io/victorian-hex-map/.
+The demo is live at https://ioracing.com/vic-seats-demo/.
 
 To run it yourself, you need Node 20.19+, 22.12+ or 24+.
 

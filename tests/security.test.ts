@@ -23,8 +23,11 @@ const ALL_CODE = filesUnder('src', ['.ts', '.tsx']);
 const ALL_CSS = filesUnder('src', ['.css']);
 const WORKFLOWS = filesUnder('.github/workflows', ['.yml', '.yaml']);
 
-/** Sites the source may link to: the data's primary sources, the licence it is published under and this project's repository. */
-const LINK_HOSTS = ['www.vec.vic.gov.au', 'www.parliament.vic.gov.au', 'creativecommons.org', 'github.com'];
+/**
+ * Sites the source may link to: the data's primary sources, the licence it is published under, this
+ * project's repository and the address the demo names as its canonical copy.
+ */
+const LINK_HOSTS = ['www.vec.vic.gov.au', 'www.parliament.vic.gov.au', 'creativecommons.org', 'github.com', 'ioracing.com'];
 
 /** Every match of a pattern in a set of files, as "path: match". */
 function matches(paths: readonly string[], pattern: RegExp): string[] {

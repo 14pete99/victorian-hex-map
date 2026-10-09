@@ -139,6 +139,12 @@ export function Demo() {
         <aside className="area-aside">
           <SeatCard projection={shown} theme={theme} />
         </aside>
+        {/* The same introduction is in index.html, for readers and crawlers that run no script. */}
+        <section className="about">
+          <h2 className="eyebrow">About this map</h2>
+          <p>A Victorian electoral map drawn as hexagons. Each of the 88 state electorates in the Legislative Assembly is one hexagon of the same size, placed roughly where it sits in the state and coloured by the party that holds the seat.</p>
+          <p>Each seat counts the same in Parliament, but on a geographic map the Melbourne seats, where most of them are, shrink to specks beside the country ones. Giving every seat the same space shows the house as it votes.</p>
+        </section>
       </main>
       <footer className="footer">
         Holdings: <b>{ASSEMBLY_DATE}</b>, including one vacant seat. Margins and contest details refer to the 2022 election. 2022 results ©{' '}

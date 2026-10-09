@@ -7,7 +7,8 @@
   --surface-2: #f8f7f2;
   --ink: #15171c;
   --ink-2: #3a3f49;
-  --muted: #69707c;
+  /* Dark enough for small text on --paper: 4.7 to 1. */
+  --muted: #646b77;
   --line: #e3dfd4;
   --line-strong: #cbc6b8;
   --focus: #1857e0;
@@ -68,6 +69,7 @@ body {
 }
 
 h1,
+h2,
 h3,
 p,
 dl,
@@ -94,7 +96,7 @@ button {
 }
 
 .eyebrow {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -113,7 +115,7 @@ button {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.04em;
   line-height: 1.5;
@@ -160,7 +162,8 @@ button {
   grid-template-areas:
     'titles'
     'map'
-    'aside';
+    'aside'
+    'about';
   max-width: 1840px;
   margin: 0 auto;
   padding: 18px clamp(12px, 2.4vw, 32px) 8px;
@@ -204,7 +207,8 @@ button {
     grid-template-columns: minmax(0, 1fr) 320px;
     grid-template-areas:
       'titles titles'
-      'map aside';
+      'map aside'
+      'about about';
   }
 }
 
@@ -368,7 +372,7 @@ button {
 }
 
 .facts dt {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -378,6 +382,24 @@ button {
 .facts dd {
   font-size: 15px;
   font-weight: 650;
+}
+
+/* ---- About ------------------------------------------------------------- */
+
+/* Also styles the introduction in index.html, which shows until the script runs. */
+.about {
+  grid-area: about;
+  max-width: 72ch;
+  padding: 4px 4px 0;
+  color: var(--ink-2);
+}
+
+.about p {
+  margin-top: 6px;
+}
+
+.about a {
+  color: inherit;
 }
 
 /* ---- Footer ------------------------------------------------------------ */

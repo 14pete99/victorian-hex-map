@@ -4,12 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="data:," />
-    <title>Victorian Hexagon Map</title>
-    <meta name="description" content="A hex map of the 88 seats in Victoria's Legislative Assembly: one hexagon per seat, coloured by the party that holds it. An open-source React component with its seat data." />
+    <title>Victorian electoral map: hexagon map of all 88 state seats</title>
+    <meta name="description" content="A Victorian electoral map in hexagons: one for each of the 88 state electorates, coloured by the party that holds the seat. An open-source React component." />
+    <link rel="canonical" href="https://ioracing.com/vic-seats-demo/" />
     <meta name="google-site-verification" content="9hmv9bCMZmSi1KFr7F8Gaea2xajV_0-M029MVe8FqAE" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Shown until the script runs, and read by crawlers and link previews that run none. React replaces it. The same introduction is in src/demo/Demo.tsx. -->
+      <main class="workspace">
+        <div class="titles">
+          <h1>Victorian lower house</h1>
+        </div>
+        <section class="about">
+          <h2 class="eyebrow">About this map</h2>
+          <p>A Victorian electoral map drawn as hexagons. Each of the 88 state electorates in the Legislative Assembly is one hexagon of the same size, placed roughly where it sits in the state and coloured by the party that holds the seat.</p>
+          <p>Each seat counts the same in Parliament, but on a geographic map the Melbourne seats, where most of them are, shrink to specks beside the country ones. Giving every seat the same space shows the house as it votes.</p>
+          <p><a href="https://github.com/14pete99/victorian-hex-map">Source code on GitHub</a></p>
+        </section>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

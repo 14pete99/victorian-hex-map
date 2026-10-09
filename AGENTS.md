@@ -162,6 +162,9 @@ npm run check:release    # type check, tests, build and security checks; run bef
 - `.github/workflows/pages.yml` publishes the demo to GitHub Pages at https://14pete99.github.io/victorian-hex-map/. Its only trigger is also `workflow_dispatch`, so a push publishes nothing. Do not add a trigger or start a run unless asked. Its `deploy` job is the one job with write access (`pages` and `id-token`); the same pinning rule applies.
 - The published demo sits under `/victorian-hex-map/`, so `vite.config.ts` sets `base: './'`. Do not remove it.
 - The `google-site-verification` tag in `index.html` is the maintainer's proof of ownership for Google Search Console. Do not remove or change it.
+- The demo is also served at https://ioracing.com/vic-seats-demo/, built by that site's repository from a pinned commit of this one. That address is the canonical copy: `index.html` names it in a `rel="canonical"` link. Do not change the link unless asked.
+- ioracing.com serves the page under a Content-Security-Policy that allows scripts, styles and images from its own origin only. Do not add an inline `<script>` or `<style>`, a `style` attribute in `index.html`, or anything loaded from another site.
+- The introduction is written twice: inside `#root` in `index.html`, for crawlers that run no script, and under "About this map" in `Demo.tsx`. Change both together.
 
 ## Rules for changing this repository
 

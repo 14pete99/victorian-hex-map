@@ -95,7 +95,14 @@ It is **not active**. As written it runs only when someone starts it by hand fro
 
 ## Publishing the demo
 
-The demo is published with GitHub Pages at https://14pete99.github.io/victorian-hex-map/. `.github/workflows/pages.yml` runs the type check, the tests and the build, then deploys `dist/`.
+The demo is published in two places.
+
+- **https://ioracing.com/vic-seats-demo/** is the canonical copy. That site's own repository builds it from a pinned commit of this one, so it changes when the pin moves.
+- **https://14pete99.github.io/victorian-hex-map/** is the GitHub Pages copy, published from here.
+
+`index.html` names the first in a `rel="canonical"` link, so search engines index that address and treat the Pages copy as a duplicate of it.
+
+For GitHub Pages, `.github/workflows/pages.yml` runs the type check, the tests and the build, then deploys `dist/`.
 
 It runs only when someone starts it by hand: from the Actions tab, or with
 
@@ -108,3 +115,8 @@ A push does not publish anything, so the site shows `main` as it was at the last
 The site sits under `/victorian-hex-map/`, not at the root of its host, so `vite.config.ts` sets `base: './'` to give the build relative asset paths.
 
 `index.html` carries a `google-site-verification` tag. It proves to Google Search Console that the maintainer owns the published site; Google rechecks it from time to time, so removing it ends the verification.
+
+Two things in `index.html` and the demo follow from how the page is published and found.
+
+- **The introduction is written twice.** `index.html` holds a short introduction inside `#root`, for crawlers and link previews that run no script; React replaces it when the demo starts. `Demo.tsx` shows the same text under "About this map". Change both together.
+- **No inline script or style.** ioracing.com serves the page under a Content-Security-Policy that allows scripts, styles and images from its own origin only. Style the page from `demo.css`, and add nothing that loads from another site.
