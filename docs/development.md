@@ -106,3 +106,5 @@ gh workflow run pages.yml
 A push does not publish anything, so the site shows `main` as it was at the last run. GitHub deploys only from `main`.
 
 The site sits under `/victorian-hex-map/`, not at the root of its host, so `vite.config.ts` sets `base: './'` to give the build relative asset paths.
+
+`index.html` carries a `google-site-verification` tag. It proves to Google Search Console that the maintainer owns the published site; Google rechecks it from time to time, so removing it ends the verification.

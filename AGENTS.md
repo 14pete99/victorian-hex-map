@@ -161,6 +161,7 @@ npm run check:release    # type check, tests, build and security checks; run bef
 - `.github/workflows/ci.yml` is deliberately not active: its only trigger is `workflow_dispatch`. Do not uncomment the other triggers unless asked. Actions in it are pinned to full commit SHAs; keep them pinned when updating.
 - `.github/workflows/pages.yml` publishes the demo to GitHub Pages at https://14pete99.github.io/victorian-hex-map/. Its only trigger is also `workflow_dispatch`, so a push publishes nothing. Do not add a trigger or start a run unless asked. Its `deploy` job is the one job with write access (`pages` and `id-token`); the same pinning rule applies.
 - The published demo sits under `/victorian-hex-map/`, so `vite.config.ts` sets `base: './'`. Do not remove it.
+- The `google-site-verification` tag in `index.html` is the maintainer's proof of ownership for Google Search Console. Do not remove or change it.
 
 ## Rules for changing this repository
 
