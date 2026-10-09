@@ -15,7 +15,9 @@ Each seat counts the same in Parliament, but on a geographic map the Melbourne s
 
 ## Try it
 
-Needs Node 20.19+, 22.12+ or 24+.
+The demo is live at https://14pete99.github.io/victorian-hex-map/.
+
+To run it yourself, you need Node 20.19+, 22.12+ or 24+.
 
 ```bash
 git clone https://github.com/14pete99/victorian-hex-map.git

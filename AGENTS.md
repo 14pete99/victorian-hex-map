@@ -19,7 +19,7 @@ src/map/        The map. Self-contained: it imports only React and its own files
 src/demo/       A demo page around the map. Not needed to reuse the map.
 tests/          Automated tests (Vitest). Not needed to reuse the map.
 docs/           Documentation for people, and the README screenshot.
-.github/        The CI workflow and the issue forms. The workflow is not active; see "Tests and release checks".
+.github/        The CI and Pages workflows and the issue forms. Neither runs on a push; see "Tests and release checks".
 CONTRIBUTING.md, SECURITY.md   How to contribute and how to report a vulnerability.
 ```
 
@@ -153,12 +153,14 @@ npm run check:release    # type check, tests, build and security checks; run bef
 | `tests/assembly.test.ts` | The dated snapshot: totals, the vacancy, and an HTTPS source on an approved site for each change |
 | `tests/map.test.ts` | The rules in `map.ts`: geometry, labels, bands, filters, zoom, pinch and pan limits, colour contrast |
 | `tests/render.test.tsx` | The component's markup, rendered without a browser |
-| `tests/security.test.ts` | Imports, forbidden APIs, external links, dependencies, the lockfile and the CI workflow |
+| `tests/security.test.ts` | Imports, forbidden APIs, external links, dependencies, the lockfile and the workflows |
 
 - Tests live in `tests/`, never in `src/map/`, so the folder people copy stays at ten files.
 - `tests/security.test.ts` holds allow-lists: the sites the source may link to, and the packages allowed an install script. Adding an entry is a decision for the maintainer, not a way to make a test pass.
 - The tests do not cover pointer events, the flip animation or zooming. The browser check above still applies.
 - `.github/workflows/ci.yml` is deliberately not active: its only trigger is `workflow_dispatch`. Do not uncomment the other triggers unless asked. Actions in it are pinned to full commit SHAs; keep them pinned when updating.
+- `.github/workflows/pages.yml` publishes the demo to GitHub Pages at https://14pete99.github.io/victorian-hex-map/. Its only trigger is also `workflow_dispatch`, so a push publishes nothing. Do not add a trigger or start a run unless asked. Its `deploy` job is the one job with write access (`pages` and `id-token`); the same pinning rule applies.
+- The published demo sits under `/victorian-hex-map/`, so `vite.config.ts` sets `base: './'`. Do not remove it.
 
 ## Rules for changing this repository
 

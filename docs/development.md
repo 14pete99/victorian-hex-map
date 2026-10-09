@@ -33,7 +33,7 @@ src/map/        The map: the folder people copy
 src/demo/       The demo page around the map
 tests/          Tests, and the VEC vote counts the seat data is checked against
 docs/           This documentation and the README screenshot
-.github/        The CI workflow and the issue forms
+.github/        The CI and Pages workflows and the issue forms
 ```
 
 [CONTRIBUTING.md](../CONTRIBUTING.md) and [SECURITY.md](../SECURITY.md) sit at the top level, where GitHub looks for them. `.gitattributes` keeps every text file on LF line endings.
@@ -67,14 +67,14 @@ The tests do not cover pointer events, the flip animation or zooming. Check thos
 
 ## Security checks
 
-`tests/security.test.ts` reads the source, the lockfile and the CI workflow, and fails unless:
+`tests/security.test.ts` reads the source, the lockfile and the workflows, and fails unless:
 
 - `src/map/` imports only React and its own files;
 - the source has no raw-HTML, `eval`, network or browser-storage code;
 - every external link is HTTPS, goes to an approved site and opens without a reference back to the page;
 - the only runtime dependencies are React and React DOM, and no script runs on install;
 - every locked package comes from the npm registry with an integrity hash;
-- CI actions are pinned to a full commit and run with read-only access.
+- workflow actions are pinned to a full commit, and every workflow has read-only access unless a job asks for more. Only the job that publishes the demo does.
 
 The test holds two allow-lists: the sites the source may link to, and the packages allowed to run an install script. Adding to either is a decision to make on purpose, not a way to get a test to pass.
 
@@ -85,9 +85,24 @@ The test holds two allow-lists: the sites the source may link to, and the packag
 1. Run `npm run check:release`.
 2. Run the browser check in [AGENTS.md](../AGENTS.md) against the demo.
 3. If the map's appearance changed, retake `docs/screenshot3-no-labels.png`, the README screenshot: the demo's map and controls in the dark theme at 100% zoom, with seat labels off and no seat selected.
+4. Once the release is on `main`, publish the demo; see below.
 
 ## Continuous integration
 
 `.github/workflows/ci.yml` runs the type check, tests, build and security checks on Node 22 and 24.
 
 It is **not active**. As written it runs only when someone starts it by hand from the repository's Actions tab. To switch it on, uncomment the `pull_request`, `push` and `schedule` triggers at the top of the file.
+
+## Publishing the demo
+
+The demo is published with GitHub Pages at https://14pete99.github.io/victorian-hex-map/. `.github/workflows/pages.yml` runs the type check, the tests and the build, then deploys `dist/`.
+
+It runs only when someone starts it by hand: from the Actions tab, or with
+
+```bash
+gh workflow run pages.yml
+```
+
+A push does not publish anything, so the site shows `main` as it was at the last run. GitHub deploys only from `main`.
+
+The site sits under `/victorian-hex-map/`, not at the root of its host, so `vite.config.ts` sets `base: './'` to give the build relative asset paths.

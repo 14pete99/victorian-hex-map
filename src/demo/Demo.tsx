@@ -143,7 +143,8 @@ export function Demo() {
       <footer className="footer">
         Holdings: <b>{ASSEMBLY_DATE}</b>, including one vacant seat. Margins and contest details refer to the 2022 election. 2022 results ©{' '}
         <a href="https://www.vec.vic.gov.au/results/state-election-results/2022-state-election-results" target="_blank" rel="noreferrer">Victorian Electoral Commission</a>,{' '}
-        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC BY 4.0</a>.
+        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC BY 4.0</a>.{' '}
+        <a href="https://github.com/14pete99/victorian-hex-map" target="_blank" rel="noreferrer">Source code on GitHub</a>.
       </footer>
     </div>
   );
