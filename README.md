@@ -8,7 +8,7 @@ Each seat counts the same in Parliament, but on a geographic map the Melbourne s
 
 ## What is in it
 
-- **The map.** A self-contained React component. Point at or select a seat, filter by party, zoom and pan, and switch between light and dark themes. Its only dependency is React.
+- **The map.** A self-contained React component. Point at or select a seat, filter by party, zoom and pan, outline the metropolitan seats, and switch between light and dark themes. Its only dependency is React.
 - **The data.** The 2022 state election result for every seat (winner, runner-up and margin), checked against Victorian Electoral Commission counts. It also holds the state of the house on 1 October 2026: Labor 54, Liberal 20, Nationals 9, Greens 2, Independent 2 and one vacancy, with each change since the election linked to its source.
 - **A demo page.** Its map and controls are in the screenshot above.
 - **Tests.** Checks on the data, the map's rules, its markup and its security.

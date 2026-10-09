@@ -3,7 +3,7 @@
 // selected rings, dimming and zoom limits.
 import { SEATS } from './seats';
 import { WATER } from './water';
-import type { MapCell, MarginBand, Party, Seat, SeatProjection } from './types';
+import type { MapCell, MarginBand, Party, Region, Seat, SeatProjection } from './types';
 
 /** R is the distance from a hexagon's centre to a vertex. The grid is 13 columns by 12 rows. */
 export const HEX = { radius: 36, marginX: 40, marginY: 50, columns: 13, firstRow: 0, lastRow: 11 } as const;
@@ -116,6 +116,18 @@ export function outlinePath(cells: readonly MapCell[]): string {
   return outlineLoops(cells)
     .map((loop) => `M${loop.map(pointText).join('L')}Z`)
     .join('');
+}
+
+/** the regions outside Melbourne. A seat in any other region is a metropolitan one. */
+export const REGIONAL_REGIONS: readonly Region[] = ['Regional West', 'Regional North', 'Bendigo-Ballarat', 'Gippsland', 'Geelong'];
+
+export function isMetro(seat: Seat): boolean {
+  return !REGIONAL_REGIONS.includes(seat.region);
+}
+
+/** one line round the metropolitan seats as a group, not round each seat, as an SVG path. */
+export function metroOutlinePath(seats: readonly Seat[]): string {
+  return outlinePath(seats.filter(isMetro));
 }
 
 /** clear space kept between the outermost hexagons and the edge of the drawing area. */

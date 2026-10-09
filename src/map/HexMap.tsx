@@ -7,7 +7,7 @@ import { partyColour } from './parties';
 import { THEME_COLOURS } from './themes';
 import { WATER } from './water';
 import {
-  canPan, canPointAt, DIMMED_OPACITY, FLIP, seatSublabel, hexCentre, hexPoints, hexState, highlightRings, HEX, isDimmed, LABEL, MAP_PADDING, mapBounds, mapLabel, outlinePath, pinchOf, pinchView,
+  canPan, canPointAt, DIMMED_OPACITY, FLIP, seatSublabel, hexCentre, hexPoints, hexState, highlightRings, HEX, isDimmed, LABEL, MAP_PADDING, mapBounds, mapLabel, metroOutlinePath, outlinePath, pinchOf, pinchView,
   settleView, textOn, tint, waterNameLines, wheelZoom, zoomIn, zoomOut, zoomPercent, ZOOM,
 } from './map';
 import type { MapFilters, MapView, Pinch } from './map';
@@ -30,6 +30,8 @@ export interface HexMapProps {
   bands?: boolean;
   /** Show actual holdings with party labels and no historical margin tints. */
   assembly?: boolean;
+  /** whether one line is drawn round the metropolitan seats as a group. */
+  metroOutline?: boolean;
 }
 
 const INITIAL_VIEW: MapView = { zoom: ZOOM.initial, x: 0, y: 0 };
@@ -156,6 +158,8 @@ const Hex = memo(function Hex({ seat, winner, vacant, assembly, gained, filters,
 interface DrawingProps extends Required<Pick<HexMapProps, 'seats' | 'filters' | 'hovered' | 'selected' | 'onHover' | 'onSelect' | 'theme' | 'labels' | 'bands' | 'assembly'>> {
   bounds: ReturnType<typeof mapBounds>;
   outline: string;
+  /** The line round the metropolitan seats, or null when it is not shown. */
+  metro: string | null;
 }
 
 /**
@@ -163,7 +167,7 @@ interface DrawingProps extends Required<Pick<HexMapProps, 'seats' | 'filters' | 
  * pan or a pinch, which changes only those, redraws nothing here: a finger moving across the screen costs one
  * style change on the SVG, not a pass over 88 seats.
  */
-const Drawing = memo(function Drawing({ seats, filters, hovered, selected, onHover, onSelect, theme, labels, bands, assembly, bounds, outline }: DrawingProps) {
+const Drawing = memo(function Drawing({ seats, filters, hovered, selected, onHover, onSelect, theme, labels, bands, assembly, bounds, outline, metro }: DrawingProps) {
   // the corner labels name districts at the map's geographical extremes. Mildura,
   // Benambra and Geelong sit beside their namesake edge seats; Gippsland names the region
   // from the eastern edge, as in the original two-label map.
@@ -259,6 +263,13 @@ const Drawing = memo(function Drawing({ seats, filters, hovered, selected, onHov
         })}
       </g>
       <path className="map-outline" data-testid="map-outline" d={outline} />
+      {/* the metro line is drawn twice: a black edge, then the white line on it, so one of the two shows against any fill. */}
+      {metro && (
+        <g className="metro-outline" data-testid="metro-outline">
+          <path className="metro-outline-edge" d={metro} />
+          <path className="metro-outline-line" d={metro} />
+        </g>
+      )}
       {/* the pointed-at or selected seat is ringed on top of everything else. */}
       {highlighted.map((name) => {
         const projection = seats.find((entry) => entry.seat.name === name);
@@ -284,7 +295,7 @@ const Drawing = memo(function Drawing({ seats, filters, hovered, selected, onHov
   );
 });
 
-export const HexMap = memo(function HexMap({ seats, filters, hovered, selected, onHover, onSelect, theme = 'light', labels = true, bands = false, assembly = false }: HexMapProps) {
+export const HexMap = memo(function HexMap({ seats, filters, hovered, selected, onHover, onSelect, theme = 'light', labels = true, bands = false, assembly = false, metroOutline = false }: HexMapProps) {
   const [view, setView] = useState<MapView>(INITIAL_VIEW);
   const [dragging, setDragging] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -302,6 +313,8 @@ export const HexMap = memo(function HexMap({ seats, filters, hovered, selected, 
   const bounds = useMemo(() => mapBounds([...seatCells, ...WATER.flatMap((body) => body.cells)]), [seatCells]);
   // one line round the outer edge of the seats, the bays' shores included.
   const outline = useMemo(() => outlinePath(seatCells), [seatCells]);
+  // empty when no seat is metropolitan, and then nothing is drawn.
+  const metro = useMemo(() => (metroOutline ? metroOutlinePath(seatCells) || null : null), [metroOutline, seatCells]);
 
   /** Every change to the view goes through here: it is settled within the panel, and `latest` never falls behind. */
   const changeView = useCallback((change: (current: MapView) => MapView) => {
@@ -499,6 +512,7 @@ export const HexMap = memo(function HexMap({ seats, filters, hovered, selected, 
             assembly={assembly}
             bounds={bounds}
             outline={outline}
+            metro={metro}
           />
         </svg>
       </div>

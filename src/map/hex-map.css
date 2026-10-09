@@ -38,6 +38,9 @@
   --map-label: #69707c;
   --water: #cfe2f1;
   --water-ink: #36586f;
+  /* The same in both themes: white or black is at least 4.5 to 1 against every fill. */
+  --metro-line: #ffffff;
+  --metro-edge: #000000;
 }
 
 .map[data-theme='dark'] {
@@ -275,6 +278,7 @@
 /* a hairline along every hexagon's edge, the same width at any map size. */
 .hex-borders,
 .map-outline,
+.metro-outline,
 .hex-highlight {
   pointer-events: none;
 }
@@ -299,6 +303,35 @@
   stroke-width: calc(1.5px / var(--zoom, 1));
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
+}
+
+/* one line round the metropolitan seats as a group: a white line on a black edge twice its width. */
+.metro-outline-edge,
+.metro-outline-line {
+  fill: none;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.metro-outline-edge {
+  stroke: var(--metro-edge);
+  stroke-width: calc(7px / var(--zoom, 1));
+}
+
+.metro-outline-line {
+  stroke: var(--metro-line);
+  stroke-width: calc(3.5px / var(--zoom, 1));
+}
+
+/* On a phone-width panel the seats are about a third the size, so the line is thinner to match. */
+@container (max-width: 520px) {
+  .metro-outline-edge {
+    stroke-width: calc(5px / var(--zoom, 1));
+  }
+
+  .metro-outline-line {
+    stroke-width: calc(2.5px / var(--zoom, 1));
+  }
 }
 
 /* the pointed-at ring; a selected seat adds a gap ring and an outer ring. */

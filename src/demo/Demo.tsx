@@ -77,6 +77,7 @@ export function Demo() {
   const [atRisk, setAtRisk] = useState(false);
   const [theme, setTheme] = useState<Theme>('light');
   const [labels, setLabels] = useState(true);
+  const [metro, setMetro] = useState(false);
   const filters = useMemo<MapFilters>(() => ({ party, atRisk }), [party, atRisk]);
   // A pointed-at seat takes precedence over the selected seat.
   const shownSeat = hovered ?? selected;
@@ -130,8 +131,9 @@ export function Demo() {
               <button type="button" className="chip" aria-pressed={labels} data-testid="display-labels" onClick={() => setLabels((value) => !value)}>Seat labels</button>
             </div>
           </div>
-          <HexMap seats={ASSEMBLY_SEATS} filters={filters} hovered={hovered} selected={selected} onHover={setHovered} onSelect={setSelected} theme={theme} labels={labels} assembly />
+          <HexMap seats={ASSEMBLY_SEATS} filters={filters} hovered={hovered} selected={selected} onHover={setHovered} onSelect={setSelected} theme={theme} labels={labels} assembly metroOutline={metro} />
           <div className="map-toggles" role="group" aria-label="Map options">
+            <button type="button" className="chip" aria-pressed={metro} data-testid="display-metro" onClick={() => setMetro((value) => !value)}>Metro outline</button>
             <button type="button" className="chip" aria-pressed={atRisk} data-testid="filter-at-risk" onClick={() => setAtRisk((on) => !on)}>2022 margin below 6%</button>
           </div>
         </section>

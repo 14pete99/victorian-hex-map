@@ -70,6 +70,15 @@ describe('HexMap, 2022 result', () => {
     expect(seatsWhere(render({ filters: { party: null, atRisk: true } }), 'data-dimmed', 'false')).toHaveLength(28);
   });
 
+  it('draws the metro outline only when asked, as an edge with a line on it', () => {
+    expect(count(markup, 'data-testid="metro-outline"')).toBe(0);
+    const outlined = render({ metroOutline: true });
+    expect(count(outlined, 'data-testid="metro-outline"')).toBe(1);
+    expect(count(outlined, 'class="metro-outline-edge"')).toBe(1);
+    expect(count(outlined, 'class="metro-outline-line"')).toBe(1);
+    expect(count(outlined, 'data-testid="map-outline"')).toBe(1);
+  });
+
   it('hides seat text but keeps bay and corner labels when labels are off', () => {
     const unlabelled = render({ labels: false });
     expect(count(unlabelled, 'class="hex-name"')).toBe(0);
@@ -114,5 +123,6 @@ describe('HexMap, edge inputs', () => {
   it('renders with no seats or a single seat', () => {
     expect(hexTags(render({ seats: [] }))).toHaveLength(0);
     expect(hexTags(render({ seats: projectSeats().slice(0, 1) }))).toHaveLength(1);
+    expect(count(render({ seats: [], metroOutline: true }), 'data-testid="metro-outline"')).toBe(0);
   });
 });

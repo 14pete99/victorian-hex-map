@@ -53,6 +53,7 @@ The first six are required.
 | `labels` | `boolean` | Optional; `true` by default. `false` hides the seat text and keeps the bay and corner labels. |
 | `bands` | `boolean` | Optional; `false` by default. Tints unchanged seats by their 2022 margin. |
 | `assembly` | `boolean` | Optional; `false` by default. Labels each seat with the party that holds it and turns margin tints off. |
+| `metroOutline` | `boolean` | Optional; `false` by default. Draws one line round the metropolitan seats as a group. |
 
 `filters.atRisk` keeps only seats whose 2022 margin was under 6 points.
 
@@ -100,6 +101,7 @@ Seats are filled with their party's colour at full strength. With `bands` on, a 
 
 - Seat text is black or white, whichever contrasts more with the fill. The contrast is at least 4.5 to 1 on every party colour and tint.
 - A thin line marks each seat's edge and the map's perimeter.
+- With `metroOutline` on, a white line with a black edge runs round the metropolitan seats as a group, so it shows against any fill in either theme. A seat is metropolitan unless its `region` is one of the five in `REGIONAL_REGIONS`; `isMetro(seat)` gives the answer for one seat.
 - Port Phillip Bay and Western Port Bay are drawn as water tiles and cannot be pointed at or selected.
 - Seat names longer than nine characters are cut to eight characters and an ellipsis.
 - When a seat's winner changes, its hexagon flips over one second and takes its new colour and text half-way. The flip is skipped for people who have asked their system for reduced motion.
@@ -134,6 +136,7 @@ The colours come from two places, and each is changed differently.
 | `--map-ground` | The gap ring of a selected seat and the edge of a dimmed one |
 | `--map-label` | The corner labels |
 | `--water`, `--water-ink` | The bay tiles and their names |
+| `--metro-line`, `--metro-edge` | The metro outline and the edge it is drawn on |
 | `--font-sans`, `--font-label` | The controls' font and the seat labels' font |
 | `--float`, `--ink`, `--line`, `--surface-2`, `--focus` | The zoom controls |
 
@@ -154,7 +157,7 @@ The map takes the width of its container and sets its own height from the drawin
 ## Things to watch for
 
 - **Unstable props.** `HexMap` and each hexagon are memoised. A new `filters` object or a new `onHover` or `onSelect` function on every render redraws all 88 hexagons each time, and a new `seats` array repeats the layout work. Build `seats` once, wrap `filters` in `useMemo`, and pass stable functions such as state setters.
-- **Class name clashes.** The stylesheet uses plain global class names: `.map`, `.map-viewport`, `.map-svg`, `.map-label`, `.zoom-controls`, `.zoom-level`, `.zoom-reset`, `.hex`, `.hex-*`, `.water`, `.water-tile`, `.water-name`, `.seats` and `.map-outline`. Search your project for these first. If any are in use, rename them in both `HexMap.tsx` and `hex-map.css`.
+- **Class name clashes.** The stylesheet uses plain global class names: `.map`, `.map-viewport`, `.map-svg`, `.map-label`, `.zoom-controls`, `.zoom-level`, `.zoom-reset`, `.hex`, `.hex-*`, `.water`, `.water-tile`, `.water-name`, `.seats`, `.map-outline`, `.metro-outline` and `.metro-outline-*`. Search your project for these first. If any are in use, rename them in both `HexMap.tsx` and `hex-map.css`.
 - **Keyboard and screen readers.** The hexagons respond to a pointer only, and the drawing is exposed to assistive technology as a single image. If your readers need to reach individual seats, give them another route, such as a list or a search box that sets `selected`.
 - **Fixed text.** The "Mildura", "Gippsland", "Benambra" and "Geelong" labels and the drawing's accessible name are written into `HexMap.tsx`.
 

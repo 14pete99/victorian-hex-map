@@ -1,9 +1,9 @@
 // The rules in map.ts and parties.ts: geometry, labels, bands, filters, zoom and colour.
 import { describe, expect, it } from 'vitest';
 import {
-  AT_RISK_BELOW, BAND_STRENGTH, HEX, MAP_PADDING, PARTY_CODES, PARTY_COLOURS, SEATS, THEME_COLOURS, ZOOM,
-  canPan, canPointAt, clampZoom, contrast, fmt1, hexCentre, hexState, hexVertices, highlightRings, isAtRisk, isDimmed, mapBounds, mapLabel, marginBand,
-  neighbourCells, outlineEdges, outlineLoops, panLimit, parseColour, partyTextColour, pinchOf, pinchView, projectSeats, seatSlug, seatSublabel, settleView, textOn, tint, toHex,
+  AT_RISK_BELOW, BAND_STRENGTH, HEX, MAP_PADDING, PARTY_CODES, PARTY_COLOURS, REGIONAL_REGIONS, SEATS, THEME_COLOURS, ZOOM,
+  canPan, canPointAt, clampZoom, contrast, fmt1, hexCentre, hexState, hexVertices, highlightRings, isAtRisk, isDimmed, isMetro, mapBounds, mapLabel, marginBand, metroOutlinePath,
+  neighbourCells, outlineEdges, outlineLoops, outlinePath, panLimit, parseColour, partyTextColour, pinchOf, pinchView, projectSeats, seatSlug, seatSublabel, settleView, textOn, tint, toHex,
   waterNameLines, wheelZoom, zoomIn, zoomOut, zoomPercent,
 } from '../src/map';
 import type { MapFilters, SeatProjection, Theme } from '../src/map';
@@ -50,6 +50,18 @@ describe('grid geometry', () => {
     // An isolated cell is six edges; two cells side by side share one and leave ten.
     expect(outlineEdges([{ col: 0, row: 0 }])).toHaveLength(6);
     expect(outlineEdges([{ col: 0, row: 0 }, { col: 1, row: 0 }])).toHaveLength(10);
+  });
+
+  it('counts a seat as metropolitan unless its region is a regional one, and draws one line round them', () => {
+    const metro = SEATS.filter(isMetro);
+    expect(metro).toHaveLength(64);
+    expect(new Set(SEATS.filter((seat) => !isMetro(seat)).map((seat) => seat.region))).toEqual(new Set(REGIONAL_REGIONS));
+    expect(isMetro(seatNamed('Melbourne'))).toBe(true);
+    expect(isMetro(seatNamed('Geelong'))).toBe(false);
+    // The metropolitan seats sit together with no gap inside them, so the line is a single loop.
+    expect(outlineLoops(metro)).toHaveLength(1);
+    expect(metroOutlinePath(SEATS)).toBe(outlinePath(metro));
+    expect(metroOutlinePath(SEATS.filter((seat) => !isMetro(seat)))).toBe('');
   });
 
   it('fits the drawing to the seats and bays with padding on every side', () => {

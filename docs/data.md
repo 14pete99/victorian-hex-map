@@ -15,7 +15,7 @@ None of this is an official record. For anything that matters, use the Victorian
 | `runnerUp` | The party that came second | VEC |
 | `margin` | The winner's margin in percentage points | Worked out from VEC counts, as described below |
 | `contest` | A label for the two sides, such as "Labor v Coalition" | This project |
-| `region` | A grouping of nearby seats, such as "Outer East" | This project |
+| `region` | A grouping of nearby seats, such as "Outer East". Five of the thirteen are outside Melbourne, and the metro outline is drawn round the seats in the other eight | This project |
 | `col`, `row` | The seat's position on the map | This project |
 
 `src/map/assembly.ts` holds the state of the house on 1 October 2026, as the changes since the 2022 election.
