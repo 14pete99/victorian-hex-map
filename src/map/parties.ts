@@ -17,8 +17,8 @@ export interface PartyInfo {
 export const PARTY_COLOURS: Record<Party, Record<Theme, string>> = {
   ALP: { dark: '#e51f30', light: '#e01f2f' },
   LIB: { dark: '#166ff3', light: '#0a52bd' },
-  NAT: { dark: '#9737ae', light: '#9737ae' },
-  GRN: { dark: '#4e8321', light: '#51a702' },
+  NAT: { dark: '#0a6b45', light: '#004d33' },
+  GRN: { dark: '#2fd866', light: '#10c25b' },
   ONP: { dark: '#ee7017', light: '#c75300' },
   IND: { dark: '#c4cf00', light: '#c4cf00' },
   OTH: { dark: '#a855f7', light: '#a855f7' },
