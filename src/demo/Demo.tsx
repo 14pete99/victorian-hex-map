@@ -105,34 +105,36 @@ export function Demo() {
           </ul>
         </div>
         <section className="card area-map" aria-label="Seat map">
-          <div className="filters" role="group" aria-label="Map filters">
-            <button type="button" className="chip" aria-pressed={party === null} data-testid="filter-all" onClick={() => setParty(null)}>
-              All
-            </button>
-            {FILTER_PARTIES.map((code) => (
-              <button
-                key={code}
-                type="button"
-                className="chip"
-                aria-pressed={party === code}
-                data-testid={`filter-${code}`}
-                // Choosing the active party again returns to "All".
-                onClick={() => setParty((current) => (current === code ? null : code))}
-              >
-                <span className="dot" style={{ backgroundColor: partyColour(code, theme) }} aria-hidden="true" />
-                {PARTIES[code].name}
+          <div className="controls">
+            <div className="filters" role="group" aria-label="Map filters">
+              <button type="button" className="chip" aria-pressed={party === null} data-testid="filter-all" onClick={() => setParty(null)}>
+                All
               </button>
-            ))}
+              {FILTER_PARTIES.map((code) => (
+                <button
+                  key={code}
+                  type="button"
+                  className="chip"
+                  aria-pressed={party === code}
+                  data-testid={`filter-${code}`}
+                  // Choosing the active party again returns to "All".
+                  onClick={() => setParty((current) => (current === code ? null : code))}
+                >
+                  <span className="dot" style={{ backgroundColor: partyColour(code, theme) }} aria-hidden="true" />
+                  {PARTIES[code].name}
+                </button>
+              ))}
+            </div>
+            <div className="map-display" role="group" aria-label="Map display">
+              <button type="button" className="chip" aria-pressed={theme === 'dark'} data-testid="display-dark" onClick={() => setTheme((value) => value === 'light' ? 'dark' : 'light')}>Dark theme</button>
+              <button type="button" className="chip" aria-pressed={labels} data-testid="display-labels" onClick={() => setLabels((value) => !value)}>Seat labels</button>
+            </div>
             <button type="button" role="switch" aria-checked={atRisk} className="toggle" data-testid="filter-at-risk" onClick={() => setAtRisk((on) => !on)}>
               <span className="toggle-track" aria-hidden="true">
                 <span className="toggle-thumb" />
               </span>
               <span className="toggle-label">2022 margin below 6%</span>
             </button>
-          </div>
-          <div className="map-display" role="group" aria-label="Map display">
-            <button type="button" className="chip" aria-pressed={theme === 'dark'} data-testid="display-dark" onClick={() => setTheme((value) => value === 'light' ? 'dark' : 'light')}>Dark theme</button>
-            <button type="button" className="chip" aria-pressed={labels} data-testid="display-labels" onClick={() => setLabels((value) => !value)}>Seat labels</button>
           </div>
           <HexMap seats={ASSEMBLY_SEATS} filters={filters} hovered={hovered} selected={selected} onHover={setHovered} onSelect={setSelected} theme={theme} labels={labels} assembly />
         </section>
