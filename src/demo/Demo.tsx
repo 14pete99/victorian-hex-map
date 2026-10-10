@@ -76,7 +76,7 @@ export function Demo() {
   const [party, setParty] = useState<Party | null>(null);
   const [atRisk, setAtRisk] = useState(false);
   const [theme, setTheme] = useState<Theme>('light');
-  const [labels, setLabels] = useState(true);
+  const [labels, setLabels] = useState(false);
   const [metro, setMetro] = useState(false);
   const filters = useMemo<MapFilters>(() => ({ party, atRisk }), [party, atRisk]);
   // A pointed-at seat takes precedence over the selected seat.

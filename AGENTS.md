@@ -101,8 +101,8 @@ const seats = projectSeats({ Bass: 'LIB', Northcote: 'GRN' });
 The demo's only seat view is **Lower house · 1 October 2026**. Check:
 
 - 88 `g.hex` elements: 54 `ALP`, 20 `LIB`, 9 `NAT`, 2 `GRN`, 2 `IND`, and 1 `vacant` by `data-party`.
-- Prahran is Liberal; Ringwood and South Barwon are Independent. Brunswick has `data-vacant="true"`, the off-white vacancy fill (`#fbfaf6` in the light theme, `#e8e6df` in the dark) and a "Vacant" label. Its seat card shows a "Vacant" pill in the same colour and a note recording the member's death.
-- Labels show holding party codes, with no "GAIN" or margin labels. All 88 fills have strength 1. Seat cards show the snapshot holding, with historical facts explicitly labelled 2022.
+- Prahran is Liberal; Ringwood and South Barwon are Independent. Brunswick has `data-vacant="true"`, the off-white vacancy fill (`#fbfaf6` in the light theme, `#e8e6df` in the dark) and, with seat labels on, a "Vacant" label. Its seat card shows a "Vacant" pill in the same colour and a note recording the member's death.
+- The demo starts with seat labels off. With Seat labels pressed, labels show holding party codes, with no "GAIN" or margin labels. All 88 fills have strength 1. Seat cards show the snapshot holding, with historical facts explicitly labelled 2022.
 - Greens filtering leaves Melbourne and Richmond undimmed; Independent filtering leaves Ringwood and South Barwon. The historical margin filter leaves 28 seats undimmed.
 - Theme, labels, selection and zoom controls work. There is no scenario selector or margin-band toggle in this snapshot demo.
 - The row under the map holds the Metro outline button and then the margin filter. Pressing Metro outline adds one `[data-testid="metro-outline"]` holding two paths with the same `d`: a black edge and a white line on it, in one loop round 64 seats. It is absent until the button is pressed, and it sits under the pointed-at and selected rings.
