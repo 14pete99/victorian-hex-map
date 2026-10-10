@@ -1,4 +1,4 @@
-![Hexagon map of Victoria's 88 lower-house seats in the dark theme, coloured by party, with seat labels switched off](docs/screenshot3-no-labels.png)
+![Hexagon map of Victoria's 88 lower-house seats in the dark theme, coloured by party, with seat labels switched off](docs/screenshot4.png)
 
 # Victorian Hexagon Map
 

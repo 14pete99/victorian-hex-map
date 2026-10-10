@@ -84,7 +84,7 @@ The test holds two allow-lists: the sites the source may link to, and the packag
 
 1. Run `npm run check:release`.
 2. Run the browser check in [AGENTS.md](../AGENTS.md) against the demo.
-3. If the map's appearance changed, retake `docs/screenshot3-no-labels.png`, the README screenshot: the demo's map and controls in the dark theme at 100% zoom, with seat labels off and no seat selected.
+3. If the map's appearance changed, retake `docs/screenshot4.png`, the README screenshot: the demo's map and controls in the dark theme at 100% zoom, with seat labels off and no seat selected.
 4. Once the release is on `main`, publish the demo; see below.
 
 ## Continuous integration
